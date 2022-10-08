@@ -2,13 +2,15 @@ package handler
 
 import (
 	"net/http"
-
-	"gitlab.com/siteasservice/project-architecture/templates/template-svc-golang/internal/core"
+	"strings"
+	"tservice-checker/internal/core"
+	"tservice-checker/pkg"
 
 	"github.com/labstack/echo/v4"
 )
 
-// @Summary SignUp
+// 	* `POST /auth/register` 					— регистрация пользователя;
+// @Summary Register
 // @Tags Auth
 // @Description create account
 // @ID create-account
@@ -19,36 +21,55 @@ import (
 // @Failure 400,404 {object} errorResponse
 // @Failure 500 {object} errorResponse
 // @Failure default {object} errorResponse
-// @Router /auth/sign-up [post]
-func (h *Handler) SignUp() echo.HandlerFunc {
+// @Router /auth/register [post]
+func (h *Handler) Register() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
 		var input core.User
 
 		if err := c.Bind(&input); err != nil {
-			return errResponse(c, http.StatusBadRequest, "invalid input body.")
+			pkg.ErrPrint("transport", http.StatusBadRequest, err)
+			return errResponse(c, http.StatusBadRequest, "bind body failure")
+		}
+		if err := c.Validate(input); err != nil {
+			pkg.ErrPrint("transport", http.StatusBadRequest, err)
+			return errResponse(c, http.StatusBadRequest, "validate failure")
 		}
 
-		id, err := h.services.Authorization.CreateUser(input)
+		// * авторизация
+		_, err := h.services.Authorization.CreateUser(input)
 		if err != nil {
-			return errResponse(c, http.StatusInternalServerError, err.Error())
+			if strings.Contains(err.Error(), "login busy") {
+				pkg.ErrPrint("transport", http.StatusConflict, err)
+				return errResponse(c, http.StatusConflict, err.Error())
+			}
+
+			pkg.ErrPrint("transport", http.StatusInternalServerError, err)
+			return errResponse(c, http.StatusInternalServerError, "internal server error")
 		}
 
-		return c.JSON(http.StatusOK, map[string]interface{}{
-			"id": id,
-		})
+		// * аутентификация
+		token, err := h.services.Authorization.GenerateToken(input.Login, input.Password)
+		if err != nil {
 
+			pkg.ErrPrint("transport", http.StatusInternalServerError, err)
+			return errResponse(c, http.StatusInternalServerError, "internal server error")
+		}
+
+		c.Response().Header().Set("Authorization", "Bearer "+token)
+		return c.NoContent(http.StatusOK)
 	}
 }
 
 type signInInput struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	Login    string `json:"login" validate:"required"`
+	Password string `json:"password" validate:"required"`
 }
 
-// @Summary SignIn
+// 	* `POST /auth/login` 						— аутентификация пользователя;
+// @Summary Login
 // @Tags Auth
-// @Description login
+// @Description login in account
 // @ID login
 // @Accept  json
 // @Produce  json
@@ -57,20 +78,29 @@ type signInInput struct {
 // @Failure 400,404 {object} errorResponse
 // @Failure 500 {object} errorResponse
 // @Failure default {object} errorResponse
-// @Router /auth/sign-in [post]
-func (h *Handler) SignIn() echo.HandlerFunc {
+// @Router /auth/login [post]
+func (h *Handler) Login() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		var input signInInput
 		if err := c.Bind(&input); err != nil {
-			return errResponse(c, http.StatusBadRequest, "invalid input body")
+			pkg.ErrPrint("transport", http.StatusBadRequest, err)
+			return errResponse(c, http.StatusBadRequest, "bind body failure")
 		}
-
-		token, err := h.services.Authorization.GenerateToken(input.Username, input.Password)
+		if err := c.Validate(input); err != nil {
+			pkg.ErrPrint("transport", http.StatusBadRequest, err)
+			return errResponse(c, http.StatusBadRequest, "validate failure")
+		}
+		token, err := h.services.Authorization.GenerateToken(input.Login, input.Password)
 		if err != nil {
-			return errResponse(c, http.StatusInternalServerError, err.Error())
+			if strings.Contains(err.Error(), "invalid username/password pair") {
+				pkg.ErrPrint("transport", http.StatusBadRequest, err)
+				return errResponse(c, http.StatusUnauthorized, err.Error())
+			}
+
+			pkg.ErrPrint("transport", http.StatusInternalServerError, err)
+			return errResponse(c, http.StatusInternalServerError, "internal server error")
 		}
-		return c.JSON(http.StatusOK, map[string]interface{}{
-			"token": token,
-		})
+		c.Response().Header().Set("Authorization", "Bearer "+token)
+		return c.NoContent(http.StatusOK)
 	}
 }

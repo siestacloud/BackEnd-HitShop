@@ -4,8 +4,8 @@ import (
 	"crypto/sha1"
 	"errors"
 
-	"gitlab.com/siteasservice/project-architecture/templates/template-svc-golang/internal/core"
-	"gitlab.com/siteasservice/project-architecture/templates/template-svc-golang/internal/repository"
+	"tservice-checker/internal/core"
+	"tservice-checker/internal/repository"
 
 	"fmt"
 

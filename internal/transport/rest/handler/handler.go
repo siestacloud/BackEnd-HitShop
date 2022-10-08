@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"gitlab.com/siteasservice/project-architecture/templates/template-svc-golang/internal/service"
+	"tservice-checker/internal/service"
 )
 
 type Handler struct {

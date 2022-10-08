@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"gitlab.com/siteasservice/project-architecture/templates/template-svc-golang/internal/core"
+	"tservice-checker/internal/core"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -9,7 +9,7 @@ import (
 type Authorization interface {
 	TestDB()
 	CreateUser(user core.User) (int, error)
-	GetUser(username, password string) (core.User, error)
+	GetUser(username, password string) (*core.User, error)
 }
 
 type Repository struct {

@@ -1,8 +1,8 @@
 package service
 
 import (
-	"gitlab.com/siteasservice/project-architecture/templates/template-svc-golang/internal/core"
-	"gitlab.com/siteasservice/project-architecture/templates/template-svc-golang/internal/repository"
+	"tservice-checker/internal/core"
+	"tservice-checker/internal/repository"
 )
 
 type Authorization interface {
