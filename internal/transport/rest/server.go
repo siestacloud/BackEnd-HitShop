@@ -121,22 +121,4 @@ func (s *Server) cfgRouter() {
 	api.Use(s.h.UserIdentity) // JWT token auth
 	api.GET("/", s.h.Test())
 
-	lists := api.Group("/lists")
-	lists.POST("/", s.h.CreateList())
-	lists.GET("/", s.h.GetAllLists())
-
-	lists = api.Group("/lists")
-	lists.GET("/:id", s.h.GetListById())
-	lists.PUT("/:id", s.h.UpdateList())
-	lists.DELETE("/:id", s.h.DeleteList())
-
-	items := lists.Group("/:id/items")
-	items.POST("/", s.h.CreateItem())
-	items.GET("/", s.h.GetAllItems())
-
-	items = api.Group("/items")
-	items.GET("/:id", s.h.GetItemById())
-	items.PUT("/:id", s.h.UpdateItem())
-	items.DELETE("/:id", s.h.DeleteItem())
-
 }

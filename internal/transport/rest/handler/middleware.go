@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
 	"strings"
 
@@ -42,12 +41,12 @@ func (h *Handler) UserIdentity(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func getUserId(c echo.Context) (int, error) {
-	id := c.Get(userCtx)
+// func getUserId(c echo.Context) (int, error) {
+// 	id := c.Get(userCtx)
 
-	idInt, ok := id.(int)
-	if !ok {
-		return 0, errors.New("user id is of invalid type")
-	}
-	return idInt, nil
-}
+// 	idInt, ok := id.(int)
+// 	if !ok {
+// 		return 0, errors.New("user id is of invalid type")
+// 	}
+// 	return idInt, nil
+// }
