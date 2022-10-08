@@ -71,6 +71,11 @@ const docTemplate = `{
         },
         "/api/sessions": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "extract session by tdata folder, validate it and save in DB",
                 "consumes": [
                     "text/plain"
@@ -327,6 +332,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "create session by phone number",
                 "consumes": [
                     "application/json"

@@ -116,6 +116,8 @@ paths:
           description: ""
           schema:
             $ref: '#/definitions/handler.errorResponse'
+      security:
+      - ApiKeyAuth: []
       summary: ExtractSession
       tags:
       - Session
@@ -282,6 +284,8 @@ paths:
           description: ""
           schema:
             $ref: '#/definitions/handler.errorResponse'
+      security:
+      - ApiKeyAuth: []
       summary: CreateSession
       tags:
       - Session
