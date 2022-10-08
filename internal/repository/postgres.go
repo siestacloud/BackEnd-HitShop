@@ -47,15 +47,15 @@ func NewPostgresDB(urlDB string) (*sqlx.DB, error) {
 		log.Fatal(err)
 	}
 	// делаем запрос
-	if err := createTable(db, tAccountsTable, "CREATE TABLE telegram_accounts (id serial not null unique,user_order bigint not null unique, status varchar(255) not null,sum numeric not null,update_time timestamp);"); err != nil {
+	if err := createTable(db, tAccountsTable, "CREATE TABLE telegram_accounts (id serial not null unique,account_id bigint not null unique, status varchar(255) not null,update_time timestamp);"); err != nil {
 		log.Fatal(err)
 	}
 	// делаем запрос
-	if err := createTable(db, tSessionsTable, "CREATE TABLE telegram_sessions (id serial not null unique,user_id int references users (id) on delete cascade not null,order_id int references orders (id) on delete cascade not null);"); err != nil {
+	if err := createTable(db, tSessionsTable, "CREATE TABLE telegram_sessions (id serial not null unique,session_id bigint not null unique, status varchar(255) not null,update_time timestamp);"); err != nil {
 		log.Fatal(err)
 	}
 	// делаем запрос
-	if err := createTable(db, tAccountsSessionsTable, "CREATE TABLE users_orders (id serial not null unique,user_id int references users (id) on delete cascade not null,order_id int references orders (id) on delete cascade not null);"); err != nil {
+	if err := createTable(db, tAccountsSessionsTable, "CREATE TABLE telegram_accounts_sessions (id serial not null unique,account_id int references telegram_accounts (id) on delete cascade not null,session_id int references telegram_sessions (id) on delete cascade not null);"); err != nil {
 		log.Fatal(err)
 	}
 	return db, nil

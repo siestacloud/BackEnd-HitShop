@@ -11,7 +11,6 @@ import (
 
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
 var (
@@ -48,15 +47,13 @@ func main() {
 	services := service.NewService(repos)
 	handlers := handler.NewHandler(services)
 
-	srv, err := rest.NewServer(handlers)
+	srv, err := rest.NewServer(&cfg, handlers)
 	if err != nil {
 		log.Fatal()
 	}
-
-	if err := srv.Run(viper.GetString("port")); err != nil {
+	if err := srv.Run(); err != nil {
 		logrus.Fatalf("error occured while running http server: %s", err.Error())
 	}
-
 	// if err := db.Close(); err != nil {
 	// 	logrus.Errorf("error occured on db connection close: %s", err.Error())
 	// }
