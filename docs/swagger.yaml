@@ -1,44 +1,11 @@
 basePath: /
 definitions:
-  core.TodoItem:
+  core.Session:
     properties:
-      description:
-        type: string
-      done:
-        type: boolean
       id:
         type: integer
-      title:
-        type: string
-    required:
-    - title
     type: object
-  core.TodoList:
-    properties:
-      description:
-        type: string
-      id:
-        type: integer
-      title:
-        type: string
-    required:
-    - title
-    type: object
-  core.UpdateItemInput:
-    properties:
-      description:
-        type: string
-      done:
-        type: boolean
-      title:
-        type: string
-    type: object
-  core.UpdateListInput:
-    properties:
-      description:
-        type: string
-      title:
-        type: string
+  core.UpdateSessionInput:
     type: object
   core.User:
     properties:
@@ -60,19 +27,19 @@ definitions:
     type: object
   handler.signInInput:
     properties:
+      login:
+        type: string
       password:
         type: string
-      username:
-        type: string
     required:
+    - login
     - password
-    - username
     type: object
-host: localhost:9999
+host: localhost:8080
 info:
   contact: {}
-  description: API Server for Template Application
-  title: Template App API
+  description: REST API Server for parsing tdata folders, validate and save sessions
+  title: Telegram Checker Service
   version: "1.0"
 paths:
   /api/:
@@ -109,392 +76,28 @@ paths:
       summary: Test
       tags:
       - Test
-  /api/items/{id}:
-    delete:
+  /api/sessions:
+    post:
       consumes:
-      - application/json
-      description: delete item by id
-      operationId: delete_item_by_id
+      - text/plain
+      description: extract session by tdata folder, validate it and save in DB
+      operationId: extract-session
       parameters:
-      - description: Item ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: DeleteItem
-      tags:
-      - Item
-    get:
-      consumes:
-      - application/json
-      description: get item by id
-      operationId: get_item_by_id
-      parameters:
-      - description: Item ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Data item
-          schema:
-            $ref: '#/definitions/core.TodoItem'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: GetItemById
-      tags:
-      - Item
-    put:
-      consumes:
-      - application/json
-      description: update item by id
-      operationId: update_item_by_id
-      parameters:
-      - description: Item ID
-        in: path
-        name: id
-        required: true
-        type: integer
       - description: new title and description for item
         in: body
         name: input
         required: true
         schema:
-          $ref: '#/definitions/core.UpdateItemInput'
+          type: integer
       produces:
-      - application/json
+      - text/plain
       responses:
         "200":
-          description: OK
+          description: no content
           schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: UpdateItem
-      tags:
-      - Item
-  /api/lists/:
-    get:
-      consumes:
-      - application/json
-      description: get all  list
-      operationId: get_all_list
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Data list lists
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: GetAllLists
-      tags:
-      - List
-    post:
-      consumes:
-      - application/json
-      description: create list
-      operationId: create_list
-      parameters:
-      - description: ToDo list
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/core.TodoList'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: list id
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: CreateList
-      tags:
-      - List
-  /api/lists/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: delete list by id
-      operationId: delete_list_by_id
-      parameters:
-      - description: List ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: DeleteList
-      tags:
-      - List
-    get:
-      consumes:
-      - application/json
-      description: get list by id
-      operationId: get_list_by_id
-      parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/core.TodoList'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: GetListById
-      tags:
-      - List
-    put:
-      consumes:
-      - application/json
-      description: update list by id
-      operationId: update_list_by_id
-      parameters:
-      - description: List ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: new title and description
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/core.UpdateListInput'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: UpdateList
-      tags:
-      - List
-  /api/lists/{id}/items/:
-    get:
-      consumes:
-      - application/json
-      description: get all items
-      operationId: get_all_items
-      parameters:
-      - description: List ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Data items list
-          schema:
-            items:
-              $ref: '#/definitions/core.TodoItem'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-        default:
-          description: ""
-          schema:
-            $ref: '#/definitions/handler.errorResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: GetAllItems
-      tags:
-      - Item
-    post:
-      consumes:
-      - application/json
-      description: create item in list
-      operationId: create_item_in_list
-      parameters:
-      - description: List ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: new title and description for item
-        in: body
-        name: input
-        required: true
-        schema:
-          $ref: '#/definitions/core.TodoItem'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: item id
+            type: int
+        "202":
+          description: no content
           schema:
             type: int
         "400":
@@ -513,16 +116,180 @@ paths:
           description: ""
           schema:
             $ref: '#/definitions/handler.errorResponse'
+      summary: ExtractSession
+      tags:
+      - Session
+  /api/sessions/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete session by phone number
+      operationId: delete_session-by-phone
+      parameters:
+      - description: Phone number
+        in: path
+        name: phone
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
       security:
       - ApiKeyAuth: []
-      summary: CreateItem
+      summary: DeleteSession
       tags:
-      - Item
-  /auth/sign-in:
+      - Session
+    put:
+      consumes:
+      - application/json
+      description: update session by ID
+      operationId: update_session_by_id
+      parameters:
+      - description: session ID in data base
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: new title and description
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/core.UpdateSessionInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: UpdateSession
+      tags:
+      - Session
+  /api/sessions/{phone}:
+    get:
+      consumes:
+      - application/json
+      description: get session by phone number
+      operationId: get-session
+      parameters:
+      - description: phone number
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/core.Session'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: GetSession
+      tags:
+      - Session
     post:
       consumes:
       - application/json
-      description: login
+      description: create session by phone number
+      operationId: create-session
+      parameters:
+      - description: Phone number
+        in: path
+        name: phone
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: no content
+          schema:
+            type: int
+        "202":
+          description: no content
+          schema:
+            type: int
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: CreateSession
+      tags:
+      - Session
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: login in account
       operationId: login
       parameters:
       - description: credentials
@@ -554,10 +321,10 @@ paths:
           description: ""
           schema:
             $ref: '#/definitions/handler.errorResponse'
-      summary: SignIn
+      summary: Login
       tags:
       - Auth
-  /auth/sign-up:
+  /auth/register:
     post:
       consumes:
       - application/json
@@ -593,7 +360,7 @@ paths:
           description: ""
           schema:
             $ref: '#/definitions/handler.errorResponse'
-      summary: SignUp
+      summary: Register
       tags:
       - Auth
 securityDefinitions:

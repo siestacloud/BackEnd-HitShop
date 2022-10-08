@@ -7,18 +7,18 @@ import (
 )
 
 // * POST /api/sessions			— извлечение сессии из переданных данных от клиента (zip,tdata);
-// @Summary SignUp
-// @Tags session
-// @Description create account
-// @ID create-account
-// @Accept  json
-// @Produce  json
-// @Param input body core.User true "account info"
-// @Success 200 {integer} integer 1
+// @Summary ExtractSession
+// @Tags Session
+// @Description extract session by tdata folder, validate it and save in DB
+// @ID extract-session
+// @Accept  text/plain
+// @Produce  text/plain
+// @Param input body integer true "new title and description for item"
+// @Success 200,202 {int} int "no content"
 // @Failure 400,404 {object} errorResponse
 // @Failure 500 {object} errorResponse
 // @Failure default {object} errorResponse
-// @Router /api/user/register [post]
+// @Router /api/sessions [post]
 func (h *Handler) ExtractSession() echo.HandlerFunc {
 	return func(c echo.Context) error {
 
@@ -27,18 +27,18 @@ func (h *Handler) ExtractSession() echo.HandlerFunc {
 }
 
 // * POST /api/sessions/:phone  	— создание сессии по переданному номеру телефона (требует передачу проверочного кода);
-// @Summary SignUp
-// @Tags session
-// @Description create account
-// @ID create-account
+// @Summary CreateSession
+// @Tags Session
+// @Description create session by phone number
+// @ID create-session
 // @Accept  json
 // @Produce  json
-// @Param input body core.User true "account info"
-// @Success 200 {integer} integer 1
+// @Param phone path integer true "Phone number"
+// @Success 200,202 {int} int "no content"
 // @Failure 400,404 {object} errorResponse
 // @Failure 500 {object} errorResponse
 // @Failure default {object} errorResponse
-// @Router /api/user/register [post]
+// @Router /api/sessions/{phone} [post]
 func (h *Handler) CreateSession() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
@@ -50,9 +50,9 @@ func (h *Handler) CreateSession() echo.HandlerFunc {
 // * GET /api/sessions/:phone  		— проверка наличия(и ее живучесть) сохраненной сессии по переданному номеру телефона;
 // @Summary GetSession
 // @Security ApiKeyAuth
-// @Tags session
-// @Description get list by id
-// @ID get_list_by_id
+// @Tags Session
+// @Description get session by phone number
+// @ID get-session
 // @Accept  json
 // @Produce  json
 // @Param id path integer true "phone number"
@@ -60,11 +60,58 @@ func (h *Handler) CreateSession() echo.HandlerFunc {
 // @Failure 400,404 {object} errorResponse
 // @Failure 500 {object} errorResponse
 // @Failure default {object} errorResponse
-// @Router /api/lists/{id} [get]
+// @Router /api/sessions/{phone} [get]
 func (h *Handler) GetSessionByPhoneNumber() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
 		return c.NoContent(http.StatusOK)
+
+	}
+}
+
+// @Summary DeleteSession
+// @Security ApiKeyAuth
+// @Tags Session
+// @Description delete session by phone number
+// @ID delete_session-by-phone
+// @Accept  json
+// @Produce  json
+// @Param phone path integer true "Phone number"
+// @Success 200 {string} string "OK"
+// @Failure 400,404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /api/sessions/{id} [delete]
+func (h *Handler) DeleteList() echo.HandlerFunc {
+
+	return func(c echo.Context) error {
+
+		return c.JSON(http.StatusOK, statusResponse{
+			Status: "ok",
+		})
+
+	}
+}
+
+// @Summary UpdateSession
+// @Security ApiKeyAuth
+// @Tags Session
+// @Description update session by ID
+// @ID update_session_by_id
+// @Accept  json
+// @Produce  json
+// @Param id path integer true "session ID in data base"
+// @Param input body core.UpdateSessionInput true "new title and description"
+// @Success 200 {string} string "OK"
+// @Failure 400,404 {object} errorResponse
+// @Failure 500 {object} errorResponse
+// @Failure default {object} errorResponse
+// @Router /api/sessions/{id} [put]
+func (h *Handler) UpdateList() echo.HandlerFunc {
+
+	return func(c echo.Context) error {
+
+		return c.JSON(http.StatusOK, statusResponse{"ok"})
 
 	}
 }

@@ -3,10 +3,11 @@ package core
 import "errors"
 
 // Список пользователей
-type UsersList struct {
-	Id     int
-	UserId int
-	ListId int
+type Session struct {
+	Id int
+}
+
+type UpdateSessionInput struct {
 }
 
 type UpdateItemInput struct {
