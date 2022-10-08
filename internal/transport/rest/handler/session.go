@@ -8,6 +8,7 @@ import (
 
 // * POST /api/sessions			— извлечение сессии из переданных данных от клиента (zip,tdata);
 // @Summary ExtractSession
+// @Security ApiKeyAuth
 // @Tags Session
 // @Description extract session by tdata folder, validate it and save in DB
 // @ID extract-session
@@ -28,6 +29,7 @@ func (h *Handler) ExtractSession() echo.HandlerFunc {
 
 // * POST /api/sessions/:phone  	— создание сессии по переданному номеру телефона (требует передачу проверочного кода);
 // @Summary CreateSession
+// @Security ApiKeyAuth
 // @Tags Session
 // @Description create session by phone number
 // @ID create-session
