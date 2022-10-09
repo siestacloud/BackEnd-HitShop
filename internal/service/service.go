@@ -5,6 +5,8 @@ import (
 	"tservice-checker/internal/repository"
 )
 
+//go:generate mockgen -source=service.go -destination=mocks/mock.go
+
 type Authorization interface {
 	Test()
 	CreateUser(user core.User) (int, error)

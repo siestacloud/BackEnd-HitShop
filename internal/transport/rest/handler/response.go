@@ -1,8 +1,9 @@
 package handler
 
 import (
+	"tservice-checker/pkg"
+
 	"github.com/labstack/echo/v4"
-	"github.com/sirupsen/logrus"
 )
 
 type errorResponse struct {
@@ -14,6 +15,6 @@ type statusResponse struct {
 }
 
 func errResponse(c echo.Context, statusCode int, message string) error {
-	logrus.Error(message)
-	return c.JSON(statusCode, errorResponse{message})
+	pkg.ErrPrint("transport", statusCode, message)
+	return c.JSON(statusCode, errorResponse{"error"})
 }

@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	"tservice-checker/internal/core"
@@ -37,7 +38,7 @@ func (h *Handler) Register() echo.HandlerFunc {
 		}
 
 		// * авторизация
-		_, err := h.services.Authorization.CreateUser(input)
+		i, err := h.services.Authorization.CreateUser(input)
 		if err != nil {
 			if strings.Contains(err.Error(), "login busy") {
 				pkg.ErrPrint("transport", http.StatusConflict, err)
@@ -48,6 +49,7 @@ func (h *Handler) Register() echo.HandlerFunc {
 			return errResponse(c, http.StatusInternalServerError, "internal server error")
 		}
 
+		fmt.Print(i)
 		// * аутентификация
 		token, err := h.services.Authorization.GenerateToken(input.Login, input.Password)
 		if err != nil {

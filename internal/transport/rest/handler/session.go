@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"tservice-checker/pkg"
 
 	"github.com/labstack/echo/v4"
 )
@@ -22,6 +23,14 @@ import (
 // @Router /api/sessions [post]
 func (h *Handler) ExtractSession() echo.HandlerFunc {
 	return func(c echo.Context) error {
+		pkg.InfoPrint("transport", "new request", "/api/user/orders")
+		userID, err := getUserID(c)
+		if err != nil {
+			pkg.ErrPrint("transport", http.StatusInternalServerError, err)
+			return errResponse(c, http.StatusInternalServerError, err.Error()) // в контексте нет id пользователя
+		}
+
+		pkg.InfoPrint("transport", "progress", userID)
 
 		return c.NoContent(http.StatusOK)
 	}

@@ -6,6 +6,8 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+//go:generate mockgen -source=repository.go -destination=mocks/mock.go
+
 type Authorization interface {
 	TestDB()
 	CreateUser(user core.User) (int, error)

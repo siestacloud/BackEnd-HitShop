@@ -1,8 +1,8 @@
 package core
 
+//User имплементирует клиента
 type User struct {
-	Id       int    `json:"-" db:"id"`
-	Login    string `json:"name" binding:"required"`
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	ID       int    `json:"-" db:"id"`
+	Login    string `json:"login"  validate:"required"`
+	Password string `json:"password" validate:"required"`
 }
