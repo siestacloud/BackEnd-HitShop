@@ -9,35 +9,33 @@ import (
 )
 
 const (
-	authorizationHeader = "Authorization"
-	userCtx             = "userId"
+	authorizationCookie = "Token"
+	userCtx             = "userID"
 )
 
 func (h *Handler) UserIdentity(next echo.HandlerFunc) echo.HandlerFunc {
 
 	return func(c echo.Context) error {
-		header := c.Request().Header.Get(authorizationHeader)
-		if header == "" {
-			return errResponse(c, http.StatusUnauthorized, "empty auth header")
+		cookie, err := c.Cookie(authorizationCookie)
+		if err != nil {
+			return Redirect(c, http.StatusSeeOther, err.Error()+" client will redirect", "/auth/static/login")
 		}
 
-		headerParts := strings.Split(header, " ")
+		headerParts := strings.Split(cookie.Value, " ")
 		if len(headerParts) != 2 || headerParts[0] != "Bearer" {
-			return errResponse(c, http.StatusUnauthorized, "invalid auth header")
+			return Redirect(c, http.StatusSeeOther, "invalid cookie, client will redirect", "/auth/static/login")
 		}
 
 		if len(headerParts[1]) == 0 {
-			return errResponse(c, http.StatusUnauthorized, "token is empty")
+			return Redirect(c, http.StatusSeeOther, "token in cookie is empty, client will redirect", "/auth/static/login")
 		}
 
-		userId, err := h.services.Authorization.ParseToken(headerParts[1])
+		userID, err := h.services.Authorization.ParseToken(headerParts[1])
 		if err != nil {
-			return errResponse(c, http.StatusUnauthorized, err.Error())
+			return Redirect(c, http.StatusSeeOther, err.Error()+" client will redirect", "/auth/static/login")
 		}
-
 		// Добавляю ID пользователя в контекст
-		c.Set(userCtx, userId)
-
+		c.Set(userCtx, userID)
 		return next(c)
 	}
 }

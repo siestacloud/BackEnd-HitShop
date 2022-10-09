@@ -100,23 +100,43 @@ func (s *Server) cfgRouter() {
 	s.e.Use(middleware.GzipWithConfig(middleware.GzipConfig{
 		Level: 5,
 	}))
-
 	s.e.GET("/swagger/*", echoSwagger.WrapHandler)
+	//* serve any file from the assets directory for path /static/*
+	//* request to /static/js/main.js will fetch and serve assets/js/main.js file
+	s.e.Static("/static", "assets")
 
 	auth := s.e.Group("/auth")
-	auth.POST("/register", s.h.Register()) // ендпоинт Авторизации
-	auth.POST("/login", s.h.Login())       // ендпоинт Аутентификации
+	// * GET  /auth/static/register			— отдает статику с form-data для регистрации пользователя
+	// * GET  /auth/static/login			— отдает статику с form-data для аутентификации пользователя
+	// * POST /auth/register 				— регистрация пользователя;
+	// * POST /auth/login 					— аутентификация пользователя;
+
+	auth.GET("/static/register", s.h.StaticRegister())
+	auth.GET("/static/login", s.h.StaticLogin())
+	auth.POST("/register", s.h.Register())
+	auth.POST("/login", s.h.Login())
 
 	api := s.e.Group("/api")
-	api.Use(s.h.UserIdentity) //! доступ ограничен JWT token
-	api.GET("/", s.h.Test())
-
-	// * POST /api/sessions							— извлечение сессии из переданных данных от клиента (zip,tdata);
+	api.Use(s.h.UserIdentity) //! доступ ограничен по JWT token
+	sessions := api.Group("/sessions")
+	// * GET /api/sessions/static/extract			— отдает статику с MultipartForm-data для передачи архивов от клиента
+	// * POST /api/sessions/extract					— извлечение сессии из переданных данных от клиента (zip,tdata);
 	// * POST /api/sessions/:phone  				— создание сессии по переданному номеру телефона (требует передачу проверочного кода);
 	// * GET /api/sessions/:phone  					— проверка наличия(и ее живучесть) сохраненной сессии по переданному номеру телефона;
-	orders := api.Group("/sessions")
-	orders.POST("", s.h.ExtractSession())
-	orders.POST("/:phone", s.h.CreateSession())
-	orders.GET("/:phone", s.h.GetSessionByPhoneNumber())
+
+	sessions.GET("/static/extract", s.h.StaticExtract())
+	sessions.POST("/extract", s.h.ExtractSession())
+	sessions.POST("/:phone", s.h.CreateSession())
+	sessions.GET("/:phone", s.h.GetSessionByPhoneNumber())
+	sessions.DELETE("/:phone", s.h.DeleteSession())
+	sessions.PUT("/:phone", s.h.UpdateSession())
+
+	extract := s.e.Group("/extract")
+	// * GET /extract			— отдает статику с MultipartForm-data для передачи архивов от клиента
+	extract.Use(s.h.UserIdentity)
+
+	notexist := s.e.Group("*")
+	notexist.Use(s.h.UserIdentity)
+	notexist.GET("", s.h.RedirectToExtract())
 
 }

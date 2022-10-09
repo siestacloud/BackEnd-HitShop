@@ -16,6 +16,60 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/": {
+            "get": {
+                "description": "ендпоинт перенаправляет все запросы на основную страницу",
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "Static"
+                ],
+                "summary": "RedirectToExtract",
+                "operationId": "static-redirect",
+                "responses": {
+                    "200": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "int"
+                        }
+                    },
+                    "202": {
+                        "description": "no content",
+                        "schema": {
+                            "type": "int"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/": {
             "get": {
                 "security": [
@@ -110,6 +164,65 @@ const docTemplate = `{
                         "description": "no content",
                         "schema": {
                             "type": "int"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/sessions/static/extract": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "ендпоинт отдает статику с form-data для передачи архивов от клиента",
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "Static"
+                ],
+                "summary": "StaticExtract",
+                "operationId": "static-extract",
+                "responses": {
+                    "200": {
+                        "description": "html",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "202": {
+                        "description": "html",
+                        "schema": {
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -515,6 +628,102 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/auth/static/login": {
+            "get": {
+                "description": "ендпоинт отдает статику с form-data для аутентификации пользователя",
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "Static"
+                ],
+                "summary": "StaticLogin",
+                "operationId": "static-login",
+                "responses": {
+                    "200": {
+                        "description": "html",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "202": {
+                        "description": "html",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/static/register": {
+            "get": {
+                "description": "ендпоинт отдает статику с form-data для регистрации пользователя",
+                "consumes": [
+                    "text/plain"
+                ],
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "Static"
+                ],
+                "summary": "StaticRegister",
+                "operationId": "static-register",
+                "responses": {
+                    "200": {
+                        "description": "html",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "202": {
+                        "description": "html",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    },
+                    "default": {
+                        "description": "",
+                        "schema": {
+                            "$ref": "#/definitions/handler.errorResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -532,19 +741,16 @@ const docTemplate = `{
         "core.User": {
             "type": "object",
             "required": [
-                "name",
-                "password",
-                "username"
+                "login",
+                "password"
             ],
             "properties": {
-                "name": {
+                "login": {
                     "type": "string"
                 },
                 "password": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 5
                 }
             }
         },

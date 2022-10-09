@@ -23,7 +23,8 @@ import (
 // @Router /api/sessions [post]
 func (h *Handler) ExtractSession() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		pkg.InfoPrint("transport", "new request", "/api/user/orders")
+		pkg.InfoPrint("transport", "new request", "new request /api/sessions/extract")
+
 		userID, err := getUserID(c)
 		if err != nil {
 			pkg.ErrPrint("transport", http.StatusInternalServerError, err)
@@ -53,6 +54,7 @@ func (h *Handler) ExtractSession() echo.HandlerFunc {
 func (h *Handler) CreateSession() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
+		pkg.InfoPrint("transport", "new request", "new request ", c.Request().RequestURI, " POST")
 		return c.NoContent(http.StatusOK)
 
 	}
@@ -73,13 +75,15 @@ func (h *Handler) CreateSession() echo.HandlerFunc {
 // @Failure default {object} errorResponse
 // @Router /api/sessions/{phone} [get]
 func (h *Handler) GetSessionByPhoneNumber() echo.HandlerFunc {
-
 	return func(c echo.Context) error {
+		// todo реализовать ендпоинт
+		pkg.InfoPrint("transport", "new request", "new request ", c.Request().RequestURI, " GET")
 		return c.NoContent(http.StatusOK)
 
 	}
 }
 
+// * DELETE /api/sessions/:phone  		— удаление сохраненной сессии по переданному номеру телефона;
 // @Summary DeleteSession
 // @Security ApiKeyAuth
 // @Tags Session
@@ -93,17 +97,15 @@ func (h *Handler) GetSessionByPhoneNumber() echo.HandlerFunc {
 // @Failure 500 {object} errorResponse
 // @Failure default {object} errorResponse
 // @Router /api/sessions/{id} [delete]
-func (h *Handler) DeleteList() echo.HandlerFunc {
-
+func (h *Handler) DeleteSession() echo.HandlerFunc {
 	return func(c echo.Context) error {
-
-		return c.JSON(http.StatusOK, statusResponse{
-			Status: "ok",
-		})
+		// todo реализовать ендпоинт
+		return c.JSON(http.StatusOK, statusResponse{Status: "ok"})
 
 	}
 }
 
+// * PUT /api/sessions/:phone  		— обноление сохраненной сессии по переданному номеру телефона;
 // @Summary UpdateSession
 // @Security ApiKeyAuth
 // @Tags Session
@@ -118,10 +120,9 @@ func (h *Handler) DeleteList() echo.HandlerFunc {
 // @Failure 500 {object} errorResponse
 // @Failure default {object} errorResponse
 // @Router /api/sessions/{id} [put]
-func (h *Handler) UpdateList() echo.HandlerFunc {
-
+func (h *Handler) UpdateSession() echo.HandlerFunc {
 	return func(c echo.Context) error {
-
+		// todo реализовать ендпоинт
 		return c.JSON(http.StatusOK, statusResponse{"ok"})
 
 	}

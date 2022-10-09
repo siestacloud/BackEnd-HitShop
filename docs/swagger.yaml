@@ -9,16 +9,14 @@ definitions:
     type: object
   core.User:
     properties:
-      name:
+      login:
         type: string
       password:
-        type: string
-      username:
+        minLength: 5
         type: string
     required:
-    - name
+    - login
     - password
-    - username
     type: object
   handler.errorResponse:
     properties:
@@ -42,6 +40,42 @@ info:
   title: Telegram Checker Service
   version: "1.0"
 paths:
+  /:
+    get:
+      consumes:
+      - text/plain
+      description: ендпоинт перенаправляет все запросы на основную страницу
+      operationId: static-redirect
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: no content
+          schema:
+            type: int
+        "202":
+          description: no content
+          schema:
+            type: int
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: RedirectToExtract
+      tags:
+      - Static
   /api/:
     get:
       consumes:
@@ -289,6 +323,44 @@ paths:
       summary: CreateSession
       tags:
       - Session
+  /api/sessions/static/extract:
+    get:
+      consumes:
+      - text/plain
+      description: ендпоинт отдает статику с form-data для передачи архивов от клиента
+      operationId: static-extract
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: html
+          schema:
+            type: string
+        "202":
+          description: html
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: StaticExtract
+      tags:
+      - Static
   /auth/login:
     post:
       consumes:
@@ -367,6 +439,70 @@ paths:
       summary: Register
       tags:
       - Auth
+  /auth/static/login:
+    get:
+      consumes:
+      - text/plain
+      description: ендпоинт отдает статику с form-data для аутентификации пользователя
+      operationId: static-login
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: html
+          schema:
+            type: string
+        "202":
+          description: html
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: StaticLogin
+      tags:
+      - Static
+  /auth/static/register:
+    get:
+      consumes:
+      - text/plain
+      description: ендпоинт отдает статику с form-data для регистрации пользователя
+      operationId: static-register
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: html
+          schema:
+            type: string
+        "202":
+          description: html
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/handler.errorResponse'
+      summary: StaticRegister
+      tags:
+      - Static
 securityDefinitions:
   ApiKeyAuth:
     in: header
