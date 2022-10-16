@@ -1,7 +1,10 @@
 package handler
 
 import (
+	"fmt"
+	"log"
 	"net/http"
+	"tservice-checker/internal/core"
 	"tservice-checker/pkg"
 
 	"github.com/labstack/echo/v4"
@@ -20,12 +23,14 @@ import (
 // @Failure 400,404 {object} errorResponse
 // @Failure 500 {object} errorResponse
 // @Failure default {object} errorResponse
-// @Router /api/sessions [post]
+// @Router /api/sessions/extract [post]
 func (h *Handler) ExtractSession() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		pkg.InfoPrint("transport", "new request", "new request /api/sessions/extract")
 
 		userID, err := getUserID(c)
+		var totalResult = core.ExtractSessionResult{}
+
 		if err != nil {
 			pkg.ErrPrint("transport", http.StatusInternalServerError, err)
 			return errResponse(c, http.StatusInternalServerError, err.Error()) // в контексте нет id пользователя
@@ -33,7 +38,55 @@ func (h *Handler) ExtractSession() echo.HandlerFunc {
 
 		pkg.InfoPrint("transport", "progress", userID)
 
-		return c.NoContent(http.StatusOK)
+		//* Multipart form
+		form, err := c.MultipartForm()
+		if err != nil {
+			return err
+		}
+		files := form.File["files"]
+
+		for _, file := range files {
+			fmt.Println("ok")
+			// * сохранить полученный архив
+			filePath, err := h.services.Session.SaveZip(file)
+			if err != nil {
+				fmt.Println("error save zip:: ", err)
+
+				totalResult.SaveZipCounter--
+				continue
+			}
+			totalResult.SaveZipCounter++
+
+			// * разархивирировать из архива директорию tdata
+			tdataPath, err := h.services.Session.Unzip(filePath)
+			if err != nil {
+
+				fmt.Println("error:: ", err)
+				totalResult.UnZipCounter--
+				continue
+			}
+			totalResult.UnZipCounter++
+			fmt.Println("tdata path:: ", tdataPath)
+			// * вытащить из директории tdata сессию
+			sessions, err := h.services.Session.ExtractSession(tdataPath)
+			if err != nil {
+				fmt.Println("error session:: ", err)
+			}
+			for _, s := range sessions {
+				// * проверить жива ли сессия
+				// * если сессия жива сохранить ее базе
+				h.services.Session.ValidateSession(&s)
+				if err != nil {
+					fmt.Println("error session:: ", err)
+					log.Fatal()
+				}
+				// fmt.Println("session:: ", string(s.Data))
+			}
+
+		}
+
+		return c.HTML(http.StatusOK, fmt.Sprintf("<p>Uploaded successfully %d files </p>", len(files)))
+
 	}
 }
 

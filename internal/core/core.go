@@ -2,14 +2,6 @@ package core
 
 import "errors"
 
-// Список пользователей
-type Session struct {
-	Id int
-}
-
-type UpdateSessionInput struct {
-}
-
 type UpdateItemInput struct {
 	Title       *string `json:"title"`
 	Description *string `json:"description"`
