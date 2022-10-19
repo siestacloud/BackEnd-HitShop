@@ -3,10 +3,10 @@ module tservice-checker
 go 1.18
 
 require (
+	github.com/andybalholm/brotli v1.0.4
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/golang-jwt/jwt v3.2.2+incompatible
-	github.com/golang/mock v1.6.0
 	github.com/gotd/td v0.69.1
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/labstack/echo/v4 v4.7.2

@@ -11,15 +11,15 @@ import (
 )
 
 const (
-	clientsTable                  = "clients"                                // пользователи данного сервиса
-	tAccountsTable                = "telegram_accounts"                      // аккаунты через которые ведется вся работа
-	tAccountsAdditionalAttributes = "telegram_account_additional_attributes" // доп инфа об аккаутах
-	tUntrustSessionsTable         = "telegram_untrust_sessions"              // недоверенные сессии
-	tTrustSessionsTable           = "telegram_trust_sessions"                // доверенные сессии (создаются на основе недоверенных)
-	tAppsTable                    = "telegram_apps"                          // данные по регистрации телеграм-клиентов
-	tGroupsTable                  = "telegram_groups"                        // группы телеграм по которым работают аккаунты
-	tUsersTable                   = "telegram_users"                         // целевые пользователи телеги
-	tGroupsUsersTable             = "telegram_groups_users"                  // связующая таблица (группы с пользователями, многие ко многим)
+	clientsTable                       = "clients"                                // пользователи данного сервиса
+	tAccountsTable                     = "telegram_accounts"                      // аккаунты через которые ведется вся работа
+	tAccountsAdditionalAttributesTable = "telegram_account_additional_attributes" // доп инфа об аккаутах
+	tUntrustSessionsTable              = "telegram_untrust_sessions"              // недоверенные сессии
+	tTrustSessionsTable                = "telegram_trust_sessions"                // доверенные сессии (создаются на основе недоверенных)
+	tAppsTable                         = "telegram_apps"                          // данные по регистрации телеграм-клиентов
+	tGroupsTable                       = "telegram_groups"                        // группы телеграм по которым работают аккаунты
+	tUsersTable                        = "telegram_users"                         // целевые пользователи телеги
+	tGroupsUsersTable                  = "telegram_groups_users"                  // связующая таблица (группы с пользователями, многие ко многим)
 )
 
 // NewPostgresDB создание всех необходимых таблиц в БД
@@ -46,15 +46,15 @@ func NewPostgresDB(urlDB string) (*sqlx.DB, error) {
 		return nil, err
 	}
 	// делаем запрос на создание таблицы
-	if err := createTable(db, tAccountsAdditionalAttributes, "CREATE TABLE telegram_account_additional_attributes (pk_telegram_account_additional_attribute_id serial not null unique,fk_telegram_account_id int unique  REFERENCES telegram_accounts(pk_telegram_account_id) on delete cascade not null,bot boolean,fake boolean, scam boolean,support boolean,premium boolean,verified boolean, restricted boolean, restriction_reason text);"); err != nil {
+	if err := createTable(db, tAccountsAdditionalAttributesTable, "CREATE TABLE telegram_account_additional_attributes (pk_telegram_account_additional_attribute_id serial not null unique,fk_telegram_account_id int unique  REFERENCES telegram_accounts(pk_telegram_account_id) on delete cascade not null,bot boolean,fake boolean, scam boolean,support boolean,premium boolean,verified boolean, restricted boolean, restriction_reason text);"); err != nil {
 		return nil, err
 	}
 	// делаем запрос на создание таблицы
-	if err := createTable(db, tUntrustSessionsTable, "CREATE TABLE telegram_untrust_sessions (pk_telegram_untrust_session_id serial not null unique,fk_telegram_account_id int  REFERENCES telegram_accounts(pk_telegram_account_id) on delete cascade not null, data varchar(500) not null, create_time timestamp, delete_time timestamp);"); err != nil {
+	if err := createTable(db, tUntrustSessionsTable, "CREATE TABLE telegram_untrust_sessions (pk_telegram_untrust_session_id serial not null unique,fk_telegram_account_id int  REFERENCES telegram_accounts(pk_telegram_account_id) on delete cascade not null, data text not null, create_time timestamp, delete_time timestamp);"); err != nil {
 		return nil, err
 	}
 	// делаем запрос на создание таблицы
-	if err := createTable(db, tTrustSessionsTable, "CREATE TABLE telegram_trust_sessions (pk_telegram_trust_session_id serial not null unique,fk_telegram_account_id int  REFERENCES telegram_accounts(pk_telegram_account_id)on delete cascade not null,status varchar(15) not null,data varchar(500) not null, create_time timestamp, delete_time timestamp);"); err != nil {
+	if err := createTable(db, tTrustSessionsTable, "CREATE TABLE telegram_trust_sessions (pk_telegram_trust_session_id serial not null unique,fk_telegram_account_id int  REFERENCES telegram_accounts(pk_telegram_account_id)on delete cascade not null,status varchar(15) not null,data text not null, create_time timestamp, delete_time timestamp);"); err != nil {
 		return nil, err
 	}
 	// делаем запрос на создание таблицы

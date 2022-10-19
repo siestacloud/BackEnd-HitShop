@@ -62,7 +62,6 @@ func (s *TAccountService) MultipartSave(files []*multipart.FileHeader) (*core.Ex
 			if err != nil {
 				pkg.ErrPrint("service", "internal error while get account info: ", err, file.Filename)
 				continue
-
 			}
 
 			//* сохраняю аккаунт, всю доп инфу и валидные сессии в базу

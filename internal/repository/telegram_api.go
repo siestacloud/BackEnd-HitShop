@@ -5,6 +5,7 @@ import (
 	"errors"
 	"tservice-checker/internal/config"
 	"tservice-checker/internal/core"
+	"tservice-checker/pkg"
 
 	"github.com/gotd/td/telegram"
 )
@@ -25,6 +26,10 @@ func (c *TClientAPI) initClient(sess *core.Session) *telegram.Client {
 		SessionStorage: sess,
 	})
 }
+
+const (
+	passphrase = "advnao@__@###@!ehct53y4rch92734y" // passphrase для шифрования сессий  - так-же исп при расшифровке
+)
 
 //ValidateTSession валидация сессии
 func (c *TClientAPI) ValidateTSession(tSession *core.Session) error {
@@ -80,9 +85,16 @@ func (c *TClientAPI) GetAccountInfo(tSession *core.Session) (*core.TelegramAccou
 		if !status.Authorized {
 			return errors.New("unable get account info. Session not authorized.")
 		}
-
+		compressSession, err := pkg.Compress(tSession.Data)
+		if err != nil {
+			return err
+		}
+		// //* шифрую и сжимаю валидную сессию
+		cryptSession, err := pkg.Encrypt(compressSession, passphrase)
+		if err != nil {
+			return err
+		}
 		// * создаю новый телеграм акк
-
 		tAccount.AccountID = status.User.ID
 		tAccount.Phone = status.User.Phone
 		tAccount.UserName = status.User.Username
@@ -94,7 +106,7 @@ func (c *TClientAPI) GetAccountInfo(tSession *core.Session) (*core.TelegramAccou
 		tAccount.Premium = status.User.Premium
 		tAccount.Support = status.User.Support
 		tAccount.Verified = status.User.Verified
-		tAccount.Sessions = append(tAccount.Sessions, core.Session{Data: tSession.Data})
+		tAccount.Sessions = append(tAccount.Sessions, core.Session{Data: cryptSession})
 
 		return nil
 
