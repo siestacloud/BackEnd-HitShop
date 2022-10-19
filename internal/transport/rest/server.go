@@ -43,7 +43,6 @@ func (s *Server) Run() error {
 		return err
 	}
 
-	pkg.InfoPrint("server", "ok", "mess")
 	var runChan = make(chan os.Signal, 1)
 
 	// ctrl+c/ctrl+x interrupt
@@ -125,7 +124,7 @@ func (s *Server) cfgRouter() {
 	// * GET /api/sessions/:phone  					— проверка наличия(и ее живучесть) сохраненной сессии по переданному номеру телефона;
 
 	sessions.GET("/static/extract", s.h.StaticExtract())
-	sessions.POST("/extract", s.h.ExtractSession())
+	sessions.POST("/save", s.h.MultipartSave())
 	sessions.POST("/:phone", s.h.CreateSession())
 	sessions.GET("/:phone", s.h.GetSessionByPhoneNumber())
 	sessions.DELETE("/:phone", s.h.DeleteSession())

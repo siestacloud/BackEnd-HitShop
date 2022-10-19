@@ -32,7 +32,7 @@ func (r *AuthPostgres) CreateUser(user core.User) (int, error) {
 		return 0, errors.New("database are not connected")
 	}
 	var id int
-	query := fmt.Sprintf("INSERT INTO %s (login, password_hash) values ($1, $2) RETURNING id", usersTable)
+	query := fmt.Sprintf("INSERT INTO %s (login, password_hash) values ($1, $2) RETURNING id", clientsTable)
 
 	row := r.db.QueryRow(query, user.Login, user.Password)
 	if err := row.Scan(&id); err != nil {
@@ -49,7 +49,7 @@ func (r *AuthPostgres) GetUser(login, password string) (*core.User, error) {
 	}
 	// найденный пользователь, парсится в обьект структуры, далее он возвращается на уровень выше
 	var user core.User
-	query := fmt.Sprintf("SELECT id FROM %s WHERE login=$1 AND password_hash=$2", usersTable)
+	query := fmt.Sprintf("SELECT id FROM %s WHERE login=$1 AND password_hash=$2", clientsTable)
 	if err := r.db.Get(&user, query, login, password); err != nil {
 		pkg.ErrPrint("repository", 409, err)
 		return nil, errors.New("invalid username/password pair")

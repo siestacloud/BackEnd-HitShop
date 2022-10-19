@@ -29,21 +29,19 @@ var (
 // @name Authorization
 func main() {
 
-	// парсинг flags, env
+	// *парсинг flags, env
 	err := config.Parse(&cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
-	// подключение базы
+	// *подключение базы
 	db, err := repository.NewPostgresDB(cfg.URLPostgres)
 	if err != nil {
 		logrus.Warnf("failed to initialize postrges: %s", err.Error())
 	}
-	if err != nil {
-		logrus.Fatalf("failed to initialize db: %s", err.Error())
-	}
 
-	repos := repository.NewRepository(db)
+	// * инициализирую слои
+	repos := repository.NewRepository(db, &cfg)
 	services := service.NewService(repos)
 	handlers := handler.NewHandler(services)
 

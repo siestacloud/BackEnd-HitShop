@@ -10,6 +10,8 @@ type Server struct {
 	Address              string `env:"ADDRESS"`
 	URLPostgres          string `env:"DATABASE_URI"`
 	AccrualSystemAddress string `env:"ACCRUAL_SYSTEM_ADDRESS"`
+	AppID                int    `env:"APPID"`
+	AppHash              string `env:"APPHASH"`
 }
 
 type Logrus struct {

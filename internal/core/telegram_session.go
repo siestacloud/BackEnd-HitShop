@@ -7,14 +7,7 @@ import (
 )
 
 // Session абстракция над сессией телеграм аккаунта
-type UntrustSession struct {
-	// mux  sync.RWMutex
-	SessionID int
-	Data      []byte
-}
-
-// Session абстракция над сессией телеграм аккаунта
-type TrustSession struct {
+type Session struct {
 	// mux  sync.RWMutex
 	SessionID int
 	Data      []byte
@@ -27,7 +20,7 @@ type SessionData struct {
 }
 
 // LoadSession loads session from memory.
-func (s *UntrustSession) LoadSession(context.Context) ([]byte, error) {
+func (s *Session) LoadSession(context.Context) ([]byte, error) {
 	if s == nil {
 		return nil, session.ErrNotFound
 	}
@@ -45,33 +38,7 @@ func (s *UntrustSession) LoadSession(context.Context) ([]byte, error) {
 }
 
 // StoreSession stores session to memory.
-func (s *UntrustSession) StoreSession(ctx context.Context, data []byte) error {
-	// s.mux.Lock()
-	s.Data = data
-	// s.mux.Unlock()
-	return nil
-}
-
-// LoadSession loads session from memory.
-func (s *TrustSession) LoadSession(context.Context) ([]byte, error) {
-	if s == nil {
-		return nil, session.ErrNotFound
-	}
-
-	// s.mux.RLock()
-	// defer s.mux.RUnlock()
-
-	if len(s.Data) == 0 {
-		return nil, session.ErrNotFound
-	}
-
-	cpy := append([]byte(nil), s.Data...)
-
-	return cpy, nil
-}
-
-// StoreSession stores session to memory.
-func (s *TrustSession) StoreSession(ctx context.Context, data []byte) error {
+func (s *Session) StoreSession(ctx context.Context, data []byte) error {
 	// s.mux.Lock()
 	s.Data = data
 	// s.mux.Unlock()

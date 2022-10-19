@@ -14,9 +14,8 @@ type TelegramAccount struct {
 	CreateTime string
 	DeleteTime string
 	TelegramApp
-	TrustSessions   []TrustSession
-	UntrustSessions []UntrustSession
-	TelegramGroups  []TelegramGroup
+	Sessions       []Session
+	TelegramGroups []TelegramGroup
 	AdditionalAttributesAccount
 }
 
@@ -45,7 +44,7 @@ func (a *TelegramAccount) SetAttr(ID int64, Phone, Username, FirstName, LastName
 	a.UserName = Username
 	a.LastName = LastName
 	a.FirstName = FirstName
-	a.UntrustSessions = append(a.UntrustSessions, UntrustSession{Data: sessData})
+	a.Sessions = append(a.Sessions, Session{Data: sessData})
 }
 
 func (a *TelegramAccount) SetAddAttr(Bot, Fake, Scam, Premium, Support, Verified bool) {

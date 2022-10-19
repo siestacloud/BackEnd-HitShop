@@ -7,8 +7,8 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// * POST /api/sessions			— извлечение сессии из переданных данных от клиента (zip,tdata);
-// @Summary ExtractSession
+// * POST /api/save			— извлечение сессии из переданных данных от клиента (zip,tdata);
+// @Summary MultipartSave
 // @Security ApiKeyAuth
 // @Tags Session
 // @Description extract session by tdata folder, validate it and save in DB
@@ -20,8 +20,8 @@ import (
 // @Failure 400,404 {object} errorResponse
 // @Failure 500 {object} errorResponse
 // @Failure default {object} errorResponse
-// @Router /api/sessions/extract [post]
-func (h *Handler) ExtractSession() echo.HandlerFunc {
+// @Router /api/sessions/save [post]
+func (h *Handler) MultipartSave() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		pkg.InfoPrint("transport", "new request", "new request /api/sessions/extract")
 
@@ -40,7 +40,7 @@ func (h *Handler) ExtractSession() echo.HandlerFunc {
 			return err
 		}
 		files := form.File["files"]
-		result, err := h.services.Session.Extract(files)
+		result, err := h.services.TAccount.MultipartSave(files)
 		if err != nil {
 			return errResponse(c, http.StatusInternalServerError, err.Error()) // ошибка при извлечении сессий или при сохр в бд
 		}

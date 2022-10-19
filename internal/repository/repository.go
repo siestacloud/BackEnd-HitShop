@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"tservice-checker/internal/config"
 	"tservice-checker/internal/core"
 
 	"github.com/jmoiron/sqlx"
@@ -16,21 +17,33 @@ type Authorization interface {
 }
 
 // Session имплементирует логику хранения телеграм сессий в базе
-type Session interface {
+type TSession interface {
 	SaveSession(session string) (int, error)
-	GetSession(id int) (*core.TrustSession, error)
+	GetSession(id int) (*core.Session, error)
+}
+
+type TAccount interface {
+	Save(tAccount *core.TelegramAccount) error
+}
+type TClient interface {
+	ValidateTSession(tSession *core.Session) error
+	GetAccountInfo(tSession *core.Session) (*core.TelegramAccount, error)
 }
 
 // Repository главная структура слоя репозиторий
 type Repository struct {
 	Authorization
-	Session
+	TSession
+	TAccount
+	TClient
 }
 
 // NewRepository конструктор
-func NewRepository(db *sqlx.DB) *Repository {
+func NewRepository(db *sqlx.DB, cfg *config.Cfg) *Repository {
 	return &Repository{
 		Authorization: NewAuthPostgres(db),
-		Session:       NewSessionPostgres(db),
+		TSession:      NewSessionPostgres(db),
+		TAccount:      NewTAccountPostgres(db),
+		TClient:       NewTClientAPI(cfg),
 	}
 }

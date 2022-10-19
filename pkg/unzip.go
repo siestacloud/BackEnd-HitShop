@@ -5,10 +5,40 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"os"
 	"path/filepath"
 	"strings"
 )
+
+// SaveZip сохраняю полученный архив
+func SaveZip(file *multipart.FileHeader) (string, error) {
+
+	// Source
+	src, err := file.Open()
+	if err != nil {
+		return "", err
+	}
+	defer src.Close()
+
+	if err := os.MkdirAll("files/zip/", os.ModePerm); err != nil {
+		return "", err
+	}
+
+	filePath := "files/zip/" + file.Filename
+	// Destination
+	dst, err := os.Create(filePath)
+	if err != nil {
+		return "", err
+	}
+
+	// Copy
+	if _, err = io.Copy(dst, src); err != nil {
+		return "", err
+	}
+
+	return filePath, nil
+}
 
 // UnzipSource принимает путь до архива и путь куда архив будет разарх.
 // Ищет в архиве директорию tdata и разархивирует её, отбрасывая все остальные файлы.
