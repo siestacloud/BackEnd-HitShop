@@ -30,11 +30,11 @@ func UnzipSource(source, destination string) (string, error) {
 	var filePath, tdataPath string
 	// 3. Iterate over zip files inside the archive and unzip each of them
 	for _, f := range reader.File {
-		fmt.Println("file name: ", f.Name, "is dir: ", f.FileInfo().IsDir())
+		// fmt.Println("file name: ", f.Name, "is dir: ", f.FileInfo().IsDir())
 
 		// 4. Check if file paths are not vulnerable to Zip Slip
 		filePath = filepath.Join(destination, f.Name)
-		fmt.Println("filePath:  ", filePath)
+		// fmt.Println("filePath:  ", filePath)
 
 		if !strings.HasPrefix(filePath, filepath.Clean(destination)+string(os.PathSeparator)) {
 			return "", fmt.Errorf("invalid file path: %s", filePath)

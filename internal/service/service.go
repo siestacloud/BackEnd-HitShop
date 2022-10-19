@@ -17,10 +17,14 @@ type Authorization interface {
 
 // Session имплементирует логику извлечения и проверки сессии
 type Session interface {
-	SaveZip(file *multipart.FileHeader) (string, error) //* сохраняю полученный архив
-	Unzip(src string) (string, error)                   //* разархивирую из архива директорию tdata
-	ExtractSession(src string) ([]core.Session, error)  //* вытаскувую из директории tdata сессию
-	ValidateSession(session *core.Session) error        //* проверяю жива ли сессия, сохраняю ее в базе
+	/* Extract метод извлекает сессии из переданного слайса []*multipart.FileHeader. Работает только с архивами .zip
+	1. разархивирует архивы;
+	2. ищет в них tdata;
+	3. извлекает сессии;
+	4. валидирует сессии;
+	5. сохраняет сессии в базе;
+	6. возвращает итог*/
+	Extract([]*multipart.FileHeader) (*core.ExtractResult, error)
 }
 
 type Service struct {

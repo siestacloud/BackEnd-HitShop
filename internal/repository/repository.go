@@ -18,7 +18,7 @@ type Authorization interface {
 // Session имплементирует логику хранения телеграм сессий в базе
 type Session interface {
 	SaveSession(session string) (int, error)
-	GetSession(id int) (*core.Session, error)
+	GetSession(id int) (*core.TrustSession, error)
 }
 
 // Repository главная структура слоя репозиторий

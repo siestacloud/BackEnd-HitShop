@@ -28,11 +28,11 @@ func (r *SessionPostgres) SaveSession(session string) (int, error) {
 }
 
 //GetUser получить пользователя из базы
-func (r *SessionPostgres) GetSession(id int) (*core.Session, error) {
+func (r *SessionPostgres) GetSession(id int) (*core.TrustSession, error) {
 	if r.db == nil {
 		return nil, errors.New("database are not connected")
 	}
-	var session core.Session
+	var session core.TrustSession
 	// todo реализовать логику извлечения сессии из базы
 	return &session, nil
 }

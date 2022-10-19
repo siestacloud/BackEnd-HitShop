@@ -1,16 +1,13 @@
 package service
 
 import (
-	"bufio"
 	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"io/fs"
-	"log"
 	"mime/multipart"
 	"os"
-	"strings"
 	"tservice-checker/internal/core"
 	"tservice-checker/internal/repository"
 	"tservice-checker/pkg"
@@ -18,7 +15,7 @@ import (
 	"github.com/gotd/td/session"
 	"github.com/gotd/td/session/tdesktop"
 	"github.com/gotd/td/telegram"
-	"github.com/gotd/td/telegram/auth"
+	"github.com/gotd/td/telegram/query"
 	"github.com/gotd/td/tg"
 	"github.com/pkg/errors"
 )
@@ -33,8 +30,51 @@ func NewSessionService(repo repository.Session) *SessionService {
 	return &SessionService{repo: repo}
 }
 
+func (s *SessionService) Extract(files []*multipart.FileHeader) (*core.ExtractResult, error) {
+	var extR = core.ExtractResult{}
+	extR.TotalFiles = len(files)
+
+	for _, file := range files {
+		// * сохранить полученный архив
+		filePath, err := s.saveZip(file)
+		if err != nil {
+			pkg.ErrPrint("service", "internal error while save zip", err, file.Filename)
+			continue
+		}
+		// * разархивирировать из архива директорию tdata
+		tdataPath, err := s.unZip(filePath)
+		if err != nil {
+			pkg.ErrPrint("service", "internal error while unzip", err, file.Filename)
+			continue
+		}
+		// * вытащить из директории tdata сессию
+		untrustSessions, err := s.extractSession(tdataPath)
+		if err != nil {
+			pkg.ErrPrint("service", "internal error while extract session", err, file.Filename)
+			continue
+		}
+		extR.TotalExtractedSessions += len(untrustSessions)
+		for _, untSess := range untrustSessions {
+			// * проверяю жива ли сессия.
+			_, err := s.validateSession(&untSess)
+			if err != nil {
+				pkg.ErrPrint("service", "internal error while validate session: ", untSess.SessionID, err, file.Filename)
+				// if err := s.SaveSession(&sess); err != nil {
+				// 	pkg.ErrPrint("service", "internal error while validate session: ", sess.Id, err, file.Filename)
+				// }
+
+				continue
+
+			}
+			extR.TotalValidSessions++
+		}
+	}
+
+	return &extR, nil
+}
+
 // SaveZip сохраняю полученный архив
-func (s *SessionService) SaveZip(file *multipart.FileHeader) (string, error) {
+func (s *SessionService) saveZip(file *multipart.FileHeader) (string, error) {
 
 	// Source
 	src, err := file.Open()
@@ -63,7 +103,7 @@ func (s *SessionService) SaveZip(file *multipart.FileHeader) (string, error) {
 }
 
 // Unzip разархивирую из архива в директорию tdata
-func (s *SessionService) Unzip(src string) (string, error) {
+func (s *SessionService) unZip(src string) (string, error) {
 	tdataPath, err := pkg.UnzipSource(src, "files/unzip/")
 	if err != nil {
 		return "", err
@@ -76,8 +116,8 @@ var (
 )
 
 // ExtractSession вытаскивую из директории tdata сессию
-func (s *SessionService) ExtractSession(src string) ([]core.Session, error) {
-	var sessionArray = []core.Session{}
+func (s *SessionService) extractSession(src string) ([]core.UntrustSession, error) {
+	var sessionArray = []core.UntrustSession{}
 	dir, err := os.Stat(src)
 	switch {
 	case errors.Is(err, fs.ErrNotExist):
@@ -110,25 +150,28 @@ func (s *SessionService) ExtractSession(src string) ([]core.Session, error) {
 			return nil, err
 		}
 
-		sessionArray = append(sessionArray, core.Session{Data: data})
+		sessionArray = append(sessionArray, core.UntrustSession{Data: data})
 	}
 
 	return sessionArray, nil
 }
 
-// ValidateSession проверяю жива ли сессия, сохраняю ее в базе
-func (s *SessionService) ValidateSession(sess *core.Session) error {
+// ValidateSession проверяю жива ли сессия
+func (s *SessionService) validateSession(sess *core.UntrustSession) (*core.TelegramAccount, error) {
 
 	// st := &session.FileStorage{
 	// 	Path: "/home/user/Documents/local/Projects/telegram-tdata-parser/session.json",
 	// }
-
-	client := telegram.NewClient(9652426, "c7e1cd3c382656c433835e638965b334", telegram.Options{
+	dispatcher := tg.NewUpdateDispatcher()
+	tClient := telegram.NewClient(9652426, "c7e1cd3c382656c433835e638965b334", telegram.Options{
 		Logger:         nil,
 		SessionStorage: sess,
+		UpdateHandler:  dispatcher,
 	})
+	api := tClient.API()
+	tAccount := core.NewTelegramAccount("siesta")
 
-	if err := client.Run(context.Background(), func(ctx context.Context) error {
+	if err := tClient.Run(context.Background(), func(ctx context.Context) error {
 		// flow := auth.NewFlow(
 		// 	auth.CodeOnly("+79937001034", codeAuthenticatorFunc),
 		// 	auth.SendCodeOptions{},
@@ -136,70 +179,100 @@ func (s *SessionService) ValidateSession(sess *core.Session) error {
 		// if err := client.Auth().IfNecessary(ctx, flow); err != nil {
 		// 	panic(err)
 		// }
-		status, err := client.Auth().Status(ctx)
+		status, err := tClient.Auth().Status(ctx)
 		if err != nil {
-			log.Println(err)
 			return err
 		}
-		fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!", status.User.Phone)
-
-		switch {
-		case status.Authorized:
-			ses, err := sess.LoadSession(ctx)
-			if err != nil {
-				fmt.Println(err)
-				return err
-			}
-			fmt.Println("======================================")
-			fmt.Println(string(ses))
-			fmt.Println("======================================")
-
-			fmt.Println("AUTHENTIFICATED!!!!!!!!!!!!!!!!!!!!!")
-			break
-		case !status.Authorized:
-			fmt.Println("NOT AUTHENTIFICATED!!!!!!!!!!!!!!!!!!!!!")
-			break
+		if !status.Authorized {
+			return errors.New("client not authentificated. drop this session")
 		}
-		api := client.API()
+		// * доп проверка валидности сессии
 		_, err = api.AccountGetPassword(ctx)
 		if err != nil {
 			return err
 		}
 
-		ph, err := api.AccountGetAuthorizations(ctx)
+		ses, err := sess.LoadSession(ctx)
 		if err != nil {
 			return err
 		}
+		// * создаю новый телеграм акк
+		tAccount.SetAttr(
+			status.User.ID,
+			status.User.Phone,
+			status.User.Username,
+			status.User.FirstName,
+			status.User.LastName,
+			ses,
+		)
+		tAccount.SetAddAttr(
+			status.User.Bot,
+			status.User.Fake,
+			status.User.Scam,
+			status.User.Premium,
+			status.User.Support,
+			status.User.Verified,
+		)
 
-		for i, a := range ph.Authorizations {
+		// if err := s.Test(ctx, api); err != nil {
+		// 	return err
+		// }
+		return err
 
-			fmt.Printf("%v:  %+v \n\n\n", i, a)
-		}
-
-		st, err := api.AccountResetAuthorization(ctx, 5903999754715481020)
-		if err != nil {
-			return err
-		}
-		fmt.Printf("reset another auth? :  %+v \n\n\n", st)
-
-		api.MessagesSendMessage(ctx, &tg.MessagesSendMessageRequest{
-			Message: "Hi",
-		})
-		// Return to close client connection and free up resources.
-		return nil
 	}); err != nil {
+		return nil, err
+	}
+
+	return tAccount, nil
+}
+
+// var codeAuthenticatorFunc auth.CodeAuthenticatorFunc = func(
+// 	ctx context.Context, sentCode *tg.AuthSentCode) (string, error) {
+// 	fmt.Print("Enter code: ")
+// 	code, err := bufio.NewReader(os.Stdin).ReadString('\n')
+// 	if err != nil {
+// 		return "", err
+// 	}
+// 	return strings.TrimSpace(code), nil
+// }
+
+func (s *SessionService) Test(ctx context.Context, api *tg.Client) error {
+
+	ph, err := api.AccountGetAuthorizations(ctx)
+	if err != nil {
 		return err
 	}
 
-	return nil
-}
-
-var codeAuthenticatorFunc auth.CodeAuthenticatorFunc = func(
-	ctx context.Context, sentCode *tg.AuthSentCode) (string, error) {
-	fmt.Print("Enter code: ")
-	code, err := bufio.NewReader(os.Stdin).ReadString('\n')
-	if err != nil {
-		return "", err
+	for i, a := range ph.Authorizations {
+		fmt.Printf("%v:  %+v \n\n\n", i, a)
 	}
-	return strings.TrimSpace(code), nil
+
+	// st, err := api.AccountResetAuthorization(ctx, 5903999754715481020)
+	// if err != nil {
+	// 	return err
+	// }
+	// fmt.Printf("reset another auth? :  %+v \n\n\n", st)
+	q := query.GetDialogs(api)
+
+	collect, err := q.Collect(ctx)
+	if err != nil {
+		return err
+	}
+	fmt.Println("len ", len(collect))
+
+	for _, elem := range collect {
+
+		b, _ := json.MarshalIndent(elem, " ", "  ")
+		fmt.Println(string(b))
+		fmt.Println("*****************************************************")
+	}
+	// Return to close client connection and free up resources.
+
+	// api.ChannelsGetParticipants(ctx, &tg.ChannelsGetParticipantsRequest{
+	// 	Channel: c.channel.InputChannel(),
+	// 	Filter:  c.filter,
+	// 	Offset:  offset,
+	// 	Limit:   limit,
+	// })
+	return nil
 }

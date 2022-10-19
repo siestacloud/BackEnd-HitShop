@@ -1,10 +1,7 @@
 package handler
 
 import (
-	"fmt"
-	"log"
 	"net/http"
-	"tservice-checker/internal/core"
 	"tservice-checker/pkg"
 
 	"github.com/labstack/echo/v4"
@@ -29,7 +26,6 @@ func (h *Handler) ExtractSession() echo.HandlerFunc {
 		pkg.InfoPrint("transport", "new request", "new request /api/sessions/extract")
 
 		userID, err := getUserID(c)
-		var totalResult = core.ExtractSessionResult{}
 
 		if err != nil {
 			pkg.ErrPrint("transport", http.StatusInternalServerError, err)
@@ -44,49 +40,12 @@ func (h *Handler) ExtractSession() echo.HandlerFunc {
 			return err
 		}
 		files := form.File["files"]
-
-		for _, file := range files {
-			fmt.Println("ok")
-			// * сохранить полученный архив
-			filePath, err := h.services.Session.SaveZip(file)
-			if err != nil {
-				fmt.Println("error save zip:: ", err)
-
-				totalResult.SaveZipCounter--
-				continue
-			}
-			totalResult.SaveZipCounter++
-
-			// * разархивирировать из архива директорию tdata
-			tdataPath, err := h.services.Session.Unzip(filePath)
-			if err != nil {
-
-				fmt.Println("error:: ", err)
-				totalResult.UnZipCounter--
-				continue
-			}
-			totalResult.UnZipCounter++
-			fmt.Println("tdata path:: ", tdataPath)
-			// * вытащить из директории tdata сессию
-			sessions, err := h.services.Session.ExtractSession(tdataPath)
-			if err != nil {
-				fmt.Println("error session:: ", err)
-			}
-			for _, s := range sessions {
-				// * проверить жива ли сессия
-				// * если сессия жива сохранить ее базе
-				h.services.Session.ValidateSession(&s)
-				if err != nil {
-					fmt.Println("error session:: ", err)
-					log.Fatal()
-				}
-				// fmt.Println("session:: ", string(s.Data))
-			}
-
+		result, err := h.services.Session.Extract(files)
+		if err != nil {
+			return errResponse(c, http.StatusInternalServerError, err.Error()) // ошибка при извлечении сессий или при сохр в бд
 		}
 
-		return c.HTML(http.StatusOK, fmt.Sprintf("<p>Uploaded successfully %d files </p>", len(files)))
-
+		return c.JSON(http.StatusOK, result)
 	}
 }
 
@@ -105,7 +64,7 @@ func (h *Handler) ExtractSession() echo.HandlerFunc {
 // @Failure default {object} errorResponse
 // @Router /api/sessions/{phone} [post]
 func (h *Handler) CreateSession() echo.HandlerFunc {
-
+	// todo реализовать
 	return func(c echo.Context) error {
 		pkg.InfoPrint("transport", "new request", "new request ", c.Request().RequestURI, " POST")
 		return c.NoContent(http.StatusOK)
