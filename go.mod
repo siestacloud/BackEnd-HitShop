@@ -1,9 +1,8 @@
-module tservice-checker
+module hitshop
 
 go 1.18
 
 require (
-	github.com/andybalholm/brotli v1.0.4
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/golang-jwt/jwt v3.2.2+incompatible

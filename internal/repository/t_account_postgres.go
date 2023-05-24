@@ -3,23 +3,30 @@ package repository
 import (
 	"errors"
 	"fmt"
-	"tservice-checker/internal/core"
-	"tservice-checker/pkg"
+	"hitshop/internal/core"
+	"hitshop/pkg"
 
 	"github.com/jmoiron/sqlx"
 )
 
-//AuthPostgres реализует логику авторизации и аутентификации
+// AuthPostgres реализует логику авторизации и аутентификации
 type TAccountPostgres struct {
 	db *sqlx.DB
 }
 
-//NewAuthPostgres конструктор
-func NewTAccountPostgres(db *sqlx.DB) *SessionPostgres {
-	return &SessionPostgres{db: db}
+// NewAuthPostgres конструктор
+func NewTAccountPostgres(db *sqlx.DB) *TAccountPostgres {
+	return &TAccountPostgres{db: db}
 }
 
-func (s *SessionPostgres) Save(tAccount *core.TelegramAccount) error {
+/*
+Save метод сохраняет телеграмм аккаунт в базу
+ 1. основная инфа об аккаунте сохр в telegram_accounts;
+ 2. дополнительная инфа об аккаунте сохр в telegram_account_additional_attributes;
+ 3. валидная недоверенная сессия этого аккаунта сохр в telegram_untrust_sessions;
+ 4. метод записывает данные в режиме транзакции (все или ничего)
+*/
+func (s *TAccountPostgres) Save(tAccount *core.TelegramAccount) error {
 	if s.db == nil {
 		return errors.New("database are not connected")
 	}
@@ -89,12 +96,19 @@ func (s *SessionPostgres) Save(tAccount *core.TelegramAccount) error {
 
 }
 
-//GetUser получить пользователя из базы
-func (r *SessionPostgres) Get(id int) (*core.TelegramAccount, error) {
-	if r.db == nil {
+// GetUser получить пользователя из базы
+func (a *TAccountPostgres) Get(id int) (*core.TelegramAccount, error) {
+	if a.db == nil {
 		return nil, errors.New("database are not connected")
 	}
 	var tAccount core.TelegramAccount
 	// todo реализовать логику извлечения сессии из базы
+	query := fmt.Sprintf(`SELECT account_id,phone,owner,status,username,firstname,lastname,create_time FROM %s `, tAccountsTable)
+	if err := a.db.Select(&tAccount, query); err != nil {
+		pkg.ErrPrint("repository", 204, err)
+
+		return nil, err
+	}
+
 	return &tAccount, nil
 }

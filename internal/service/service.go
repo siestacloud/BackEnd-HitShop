@@ -1,13 +1,14 @@
 package service
 
 import (
+	"hitshop/internal/core"
+	"hitshop/internal/repository"
 	"mime/multipart"
-	"tservice-checker/internal/core"
-	"tservice-checker/internal/repository"
 )
 
-//go:generate mockgen -source=service.go -destination=mocks/mock.go
 // Authorization имплементорует логику авторизации
+//
+//go:generate mockgen -source=service.go -destination=mocks/mock.go
 type Authorization interface {
 	Test()
 	CreateUser(user core.User) (int, error)

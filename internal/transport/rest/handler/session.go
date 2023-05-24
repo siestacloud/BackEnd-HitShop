@@ -1,8 +1,8 @@
 package handler
 
 import (
+	"hitshop/pkg"
 	"net/http"
-	"tservice-checker/pkg"
 
 	"github.com/labstack/echo/v4"
 )

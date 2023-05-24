@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"tservice-checker/pkg"
+	"hitshop/pkg"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/sirupsen/logrus"

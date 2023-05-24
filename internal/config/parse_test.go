@@ -3,7 +3,7 @@ package config_test
 import (
 	"testing"
 
-	"tservice-checker/internal/config"
+	"hitshop/internal/config"
 
 	"github.com/stretchr/testify/assert"
 )

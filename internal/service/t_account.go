@@ -1,10 +1,10 @@
 package service
 
 import (
+	"hitshop/internal/core"
+	"hitshop/internal/repository"
+	"hitshop/pkg"
 	"mime/multipart"
-	"tservice-checker/internal/core"
-	"tservice-checker/internal/repository"
-	"tservice-checker/pkg"
 )
 
 // SessionService логика работы с сессиями телеграм
@@ -18,16 +18,18 @@ func NewTAccountService(repo repository.TAccount, tClient repository.TClient) *T
 	return &TAccountService{repo: repo, tClient: tClient}
 }
 
-/* MultipartSave метод извлекает сессии из переданного слайса []*multipart.FileHeader. Работает только с архивами .zip
-1. разархивирует архивы;
-2. ищет в них tdata;
-3. извлекает сессии;
-4. валидирует сессии;
-5. создает обьект tAccount, добавляет валидные сессии в поле sessions
-6. сохраняет все данные обькта tAccount (включая валидные сессии) в базу;
-7. возвращает итог*/
-func (s *TAccountService) MultipartSave(files []*multipart.FileHeader) (*core.ExtractResult, error) {
-	var sessionSVC = NewTSessionService(nil, s.tClient)
+/*
+MultipartSave метод извлекает сессии из переданного слайса []*multipart.FileHeader. Работает только с архивами .zip
+ 1. разархивирует архивы;
+ 2. ищет в них tdata;
+ 3. извлекает сессии;
+ 4. валидирует сессии;
+ 5. создает обьект tAccount, добавляет валидные сессии в поле sessions
+ 6. сохраняет все данные обькта tAccount (включая валидные сессии) в базу;
+ 7. возвращает итог
+*/
+func (a *TAccountService) MultipartSave(files []*multipart.FileHeader) (*core.ExtractResult, error) {
+	var sessionSVC = NewTSessionService(nil, a.tClient)
 	var extR = core.ExtractResult{TotalFiles: len(files)}
 
 	for _, file := range files {
@@ -58,14 +60,14 @@ func (s *TAccountService) MultipartSave(files []*multipart.FileHeader) (*core.Ex
 			}
 
 			// * получаю инфу об аккаунте на основе валидной сессии
-			tAccount, err := sessionSVC.tClient.GetAccountInfo(&tSession)
+			tAccount, err := a.tClient.GetAccountInfo(&tSession)
 			if err != nil {
 				pkg.ErrPrint("service", "internal error while get account info: ", err, file.Filename)
 				continue
 			}
 
 			//* сохраняю аккаунт, всю доп инфу и валидные сессии в базу
-			if err := s.repo.Save(tAccount); err != nil {
+			if err := a.repo.Save(tAccount); err != nil {
 				pkg.ErrPrint("service", "internal error while save account in database: ", err, file.Filename)
 				continue
 			}
@@ -75,6 +77,25 @@ func (s *TAccountService) MultipartSave(files []*multipart.FileHeader) (*core.Ex
 	}
 	return &extR, nil
 }
+
+// CreateTrustSession создаю доверенную сессию
+// func (a *TAccountService) CreateTrustSession(tAccount *core.TelegramAccount) error {
+// 	// var CodeChan chan int
+// 	var sessionSVC = NewTSessionService(nil, a.tClient)
+
+// 	// todo проверить есть ли номер телефона и недоверенная сессия, если нет, взять из базы
+// 	if tAccount.Phone == "" || len(tAccount.Sessions) == 0 {
+// 		tAccount = a.repo.Get()
+// 	}
+// 	// todo отправить запрос на вход в аккаунт по номеру телефона
+// 	// todo забрать проверочный код используя недоверенную сессию
+// 	// todo передать проверочный код для продолжения авторизации
+// 	// todo получить новую, доверенную сессию
+// 	// todo проверить валидность новой сессии
+// 	// todo сохранить сессию в базе с привязкой к телеграмм аккаунту
+// 	// todo погасить все сессии кроме доверенной
+// 	return nil
+// }
 
 // func (s *TAccountService) Test(ctx context.Context, api *tg.Client) error {
 

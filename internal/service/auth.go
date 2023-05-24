@@ -3,8 +3,8 @@ package service
 import (
 	"crypto/sha1"
 	"errors"
-	"tservice-checker/internal/core"
-	"tservice-checker/internal/repository"
+	"hitshop/internal/core"
+	"hitshop/internal/repository"
 
 	"fmt"
 
@@ -41,7 +41,7 @@ func (s *AuthService) Test() {
 	s.repo.TestDB()
 }
 
-//CreateUser создание пользователя
+// CreateUser создание пользователя
 func (s *AuthService) CreateUser(user core.User) (int, error) {
 	user.Password = generatePasswordHash(user.Password)
 	return s.repo.CreateUser(user)
@@ -67,8 +67,8 @@ func (s *AuthService) GenerateToken(login, password string) (string, error) {
 	return token.SignedString([]byte(signingKey))
 }
 
-//Используется middleware
-//Достаем Id пользователя из токена
+// Используется middleware
+// Достаем Id пользователя из токена
 func (s *AuthService) ParseToken(accessToken string) (int, error) {
 	token, err := jwt.ParseWithClaims(accessToken, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -89,7 +89,7 @@ func (s *AuthService) ParseToken(accessToken string) (int, error) {
 	return claims.UserID, nil
 }
 
-//generatePasswordHash генерирует хеш, добавляем соль, перчим
+// generatePasswordHash генерирует хеш, добавляем соль, перчим
 func generatePasswordHash(password string) string {
 	hash := sha1.New()
 	hash.Write([]byte(password))

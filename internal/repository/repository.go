@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"tservice-checker/internal/config"
-	"tservice-checker/internal/core"
+	"hitshop/internal/config"
+	"hitshop/internal/core"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -23,6 +23,11 @@ type TSession interface {
 }
 
 type TAccount interface {
+	/* Save метод сохраняет телеграмм аккаунт в базу
+	1. основная инфа об аккаунте сохр в telegram_accounts;
+	2. дополнительная инфа об аккаунте сохр в telegram_account_additional_attributes;
+	3. валидная недоверенная сессия этого аккаунта сохр в telegram_untrust_sessions;
+	4. метод записывает данные в режиме транзакции (все или ничего)*/
 	Save(tAccount *core.TelegramAccount) error
 }
 type TClient interface {

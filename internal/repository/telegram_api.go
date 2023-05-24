@@ -3,24 +3,24 @@ package repository
 import (
 	"context"
 	"errors"
-	"tservice-checker/internal/config"
-	"tservice-checker/internal/core"
-	"tservice-checker/pkg"
+	"hitshop/internal/config"
+	"hitshop/internal/core"
+	"hitshop/pkg"
 
 	"github.com/gotd/td/telegram"
 )
 
-//TClientAPI
+// TClientAPI
 type TClientAPI struct {
 	*config.Cfg
 }
 
-//NewAuthPostgres конструктор
+// NewAuthPostgres конструктор
 func NewTClientAPI(cfg *config.Cfg) *TClientAPI {
 	return &TClientAPI{cfg}
 }
 
-//GetTClient создаю клиента для работы с telegram api
+// GetTClient создаю клиента для работы с telegram api
 func (c *TClientAPI) initClient(sess *core.Session) *telegram.Client {
 	return telegram.NewClient(c.AppID, c.AppHash, telegram.Options{
 		SessionStorage: sess,
@@ -31,7 +31,7 @@ const (
 	passphrase = "advnao@__@###@!ehct53y4rch92734y" // passphrase для шифрования сессий  - так-же исп при расшифровке
 )
 
-//ValidateTSession валидация сессии
+// ValidateTSession валидация сессии
 func (c *TClientAPI) ValidateTSession(tSession *core.Session) error {
 	// st := &session.FileStorage{
 	// 	Path: "/home/user/Documents/local/Projects/telegram-tdata-parser/session.json",
@@ -72,7 +72,7 @@ func (c *TClientAPI) ValidateTSession(tSession *core.Session) error {
 	return nil
 }
 
-//AccountInfo Получение информации об аккаунте на основе сессии
+// AccountInfo Получение информации об аккаунте на основе сессии
 func (c *TClientAPI) GetAccountInfo(tSession *core.Session) (*core.TelegramAccount, error) {
 	tAccount := core.NewTelegramAccount("siesta")
 	tClient := c.initClient(tSession)

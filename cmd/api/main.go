@@ -3,11 +3,11 @@ package main
 import (
 	"log"
 
-	"tservice-checker/internal/config"
-	"tservice-checker/internal/repository"
-	"tservice-checker/internal/service"
-	"tservice-checker/internal/transport/rest"
-	"tservice-checker/internal/transport/rest/handler"
+	"hitshop/internal/config"
+	"hitshop/internal/repository"
+	"hitshop/internal/service"
+	"hitshop/internal/transport/rest"
+	"hitshop/internal/transport/rest/handler"
 
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"

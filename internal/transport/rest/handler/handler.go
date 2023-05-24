@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"tservice-checker/internal/service"
+	"hitshop/internal/service"
 )
 
 type Handler struct {

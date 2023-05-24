@@ -4,10 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"hitshop/internal/core"
+	"hitshop/internal/repository"
 	"io/fs"
 	"os"
-	"tservice-checker/internal/core"
-	"tservice-checker/internal/repository"
 
 	"github.com/gotd/td/session"
 	"github.com/gotd/td/session/tdesktop"
@@ -25,11 +25,6 @@ type TSessionService struct {
 // NewSessionService конструктор
 func NewTSessionService(repo repository.TSession, tClient repository.TClient) *TSessionService {
 	return &TSessionService{repo: repo, tClient: tClient}
-}
-
-// ValidateSession проверяю жива ли сессия
-func (s *TSessionService) ValidateSession(sess *core.Session) error {
-	return s.tClient.ValidateTSession(sess)
 }
 
 // ExtractSession вытаскивую из директории tdata сессию
@@ -71,6 +66,11 @@ func (s *TSessionService) extractSession(src string) ([]core.Session, error) {
 	}
 
 	return sessionArray, nil
+}
+
+// ValidateSession проверяю жива ли сессия
+func (s *TSessionService) ValidateSession(sess *core.Session) error {
+	return s.tClient.ValidateTSession(sess)
 }
 
 // var codeAuthenticatorFunc auth.CodeAuthenticatorFunc = func(

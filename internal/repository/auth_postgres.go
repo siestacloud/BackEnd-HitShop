@@ -3,30 +3,30 @@ package repository
 import (
 	"errors"
 	"fmt"
-	"tservice-checker/internal/core"
-	"tservice-checker/pkg"
+	"hitshop/internal/core"
+	"hitshop/pkg"
 
 	"github.com/jmoiron/sqlx"
 
 	"github.com/sirupsen/logrus"
 )
 
-//AuthPostgres реализует логику авторизации и аутентификации
+// AuthPostgres реализует логику авторизации и аутентификации
 type AuthPostgres struct {
 	db *sqlx.DB
 }
 
-//NewAuthPostgres конструктор
+// NewAuthPostgres конструктор
 func NewAuthPostgres(db *sqlx.DB) *AuthPostgres {
 	return &AuthPostgres{db: db}
 }
 
-//Тестирование доступности слоя repository
+// Тестирование доступности слоя repository
 func (r *AuthPostgres) TestDB() {
 	logrus.Info("Info from DB layer")
 }
 
-//CreateUser создание пользователя
+// CreateUser создание пользователя
 func (r *AuthPostgres) CreateUser(user core.User) (int, error) {
 	if r.db == nil {
 		return 0, errors.New("database are not connected")
@@ -42,7 +42,7 @@ func (r *AuthPostgres) CreateUser(user core.User) (int, error) {
 	return id, nil
 }
 
-//GetUser получить пользователя из базы
+// GetUser получить пользователя из базы
 func (r *AuthPostgres) GetUser(login, password string) (*core.User, error) {
 	if r.db == nil {
 		return nil, errors.New("database are not connected")

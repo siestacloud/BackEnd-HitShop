@@ -2,15 +2,16 @@ package handler
 
 import (
 	"fmt"
+	"hitshop/internal/core"
+	"hitshop/pkg"
 	"net/http"
 	"strings"
-	"tservice-checker/internal/core"
-	"tservice-checker/pkg"
 
 	"github.com/labstack/echo/v4"
 )
 
-// 	* `POST /auth/register` 	— регистрация пользователя;
+//   - `POST /auth/register` 	— регистрация пользователя;
+//
 // @Summary Register
 // @Tags Auth
 // @Description create account
@@ -72,7 +73,8 @@ type signInInput struct {
 	Password string `json:"password" validate:"required"`
 }
 
-// 	* `POST /auth/login` 						— аутентификация пользователя;
+//   - `POST /auth/login` 						— аутентификация пользователя;
+//
 // @Summary Login
 // @Tags Auth
 // @Description login in account
