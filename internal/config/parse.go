@@ -16,8 +16,6 @@ func Parse(cfg *Cfg) error {
 	flag.StringVar(&cfg.URLPostgres, "d", "not set", "url for postgres db con. Possible values: url")
 	flag.StringVar(&cfg.Logrus.LogLevel, "l", "info", "log level. Possible values: debug, info")
 	flag.BoolVar(&cfg.Logrus.JSON, "f", false, "JSON log format. Possible values: true, false")
-	flag.IntVar(&cfg.AppID, "id", 9652426, "app id. Possible value: 213123")
-	flag.StringVar(&cfg.AppHash, "h", "c7e1cd3c382656c433835e638965b334", "app hash. Possible values: dpqwdpqwkd22312pok3k21poskp21")
 
 	flag.Parse()
 

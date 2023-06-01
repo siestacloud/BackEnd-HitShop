@@ -1,17 +1,14 @@
 package config
 
-//Config Server configuration struct
+// Config Server configuration struct
 type Cfg struct {
 	Server
 }
 
 type Server struct {
 	Logrus
-	Address              string `env:"ADDRESS"`
-	URLPostgres          string `env:"DATABASE_URI"`
-	AccrualSystemAddress string `env:"ACCRUAL_SYSTEM_ADDRESS"`
-	AppID                int    `env:"APPID"`
-	AppHash              string `env:"APPHASH"`
+	Address     string `env:"ADDRESS"`
+	URLPostgres string `env:"DATABASE_URI"`
 }
 
 type Logrus struct {

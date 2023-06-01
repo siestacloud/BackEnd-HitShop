@@ -105,37 +105,20 @@ func (s *Server) cfgRouter() {
 	s.e.Static("/static", "assets")
 
 	auth := s.e.Group("/auth")
-	// * GET  /auth/static/register			— отдает статику с form-data для регистрации пользователя
-	// * GET  /auth/static/login			— отдает статику с form-data для аутентификации пользователя
 	// * POST /auth/register 				— регистрация пользователя;
 	// * POST /auth/login 					— аутентификация пользователя;
 
-	auth.GET("/static/register", s.h.StaticRegister())
-	auth.GET("/static/login", s.h.StaticLogin())
 	auth.POST("/register", s.h.Register())
 	auth.POST("/login", s.h.Login())
 
 	api := s.e.Group("/api")
 	api.Use(s.h.UserIdentity) //! доступ ограничен по JWT token
-	sessions := api.Group("/sessions")
+	// sessions := api.Group("/sessions")
 	// * GET /api/sessions/static/extract			— отдает статику с MultipartForm-data для передачи архивов от клиента
 	// * POST /api/sessions/extract					— извлечение сессии из переданных данных от клиента (zip,tdata);
 	// * POST /api/sessions/:phone  				— создание сессии по переданному номеру телефона (требует передачу проверочного кода);
 	// * GET /api/sessions/:phone  					— проверка наличия(и ее живучесть) сохраненной сессии по переданному номеру телефона;
 
-	sessions.GET("/static/extract", s.h.StaticExtract())
-	sessions.POST("/save", s.h.MultipartSave())
-	sessions.POST("/:phone", s.h.CreateSession())
-	sessions.GET("/:phone", s.h.GetSessionByPhoneNumber())
-	sessions.DELETE("/:phone", s.h.DeleteSession())
-	sessions.PUT("/:phone", s.h.UpdateSession())
-
-	extract := s.e.Group("/extract")
-	// * GET /extract			— отдает статику с MultipartForm-data для передачи архивов от клиента
-	extract.Use(s.h.UserIdentity)
-
-	notexist := s.e.Group("*")
-	notexist.Use(s.h.UserIdentity)
-	notexist.GET("", s.h.RedirectToExtract())
+	// sessions.GET("/static/extract", s.h.StaticExtract())
 
 }

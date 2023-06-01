@@ -21,9 +21,7 @@ func Encrypt(data []byte, passphrase string) ([]byte, error) {
 		return nil, err
 	}
 	ciphertext := gcm.Seal(nonce, nonce, data, nil)
-
 	return ciphertext, nil
-
 }
 
 func Decrypt(data []byte, passphrase string) ([]byte, error) {

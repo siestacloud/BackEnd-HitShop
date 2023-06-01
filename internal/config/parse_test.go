@@ -19,9 +19,8 @@ func TestParse(t *testing.T) {
 			values: config.Cfg{}, // значения, которые будет принимать функция
 			want: config.Cfg{
 				Server: config.Server{
-					Address:              "localhost:8080",
-					URLPostgres:          "not set",
-					AccrualSystemAddress: "http://localhost:8081",
+					Address:     "localhost:8080",
+					URLPostgres: "not set",
 					Logrus: config.Logrus{
 						LogLevel: "info",
 						JSON:     false},

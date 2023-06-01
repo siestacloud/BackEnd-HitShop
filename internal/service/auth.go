@@ -70,13 +70,14 @@ func (s *AuthService) GenerateToken(login, password string) (string, error) {
 // Используется middleware
 // Достаем Id пользователя из токена
 func (s *AuthService) ParseToken(accessToken string) (int, error) {
-	token, err := jwt.ParseWithClaims(accessToken, &tokenClaims{}, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("invalid signing method")
-		}
+	token, err := jwt.ParseWithClaims(accessToken, &tokenClaims{},
+		func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, errors.New("invalid signing method")
+			}
 
-		return []byte(signingKey), nil
-	})
+			return []byte(signingKey), nil
+		})
 	if err != nil {
 		return 0, err
 	}

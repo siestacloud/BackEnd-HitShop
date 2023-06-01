@@ -58,7 +58,6 @@ func (h *Handler) Register() echo.HandlerFunc {
 		// * аутентификация
 		token, err := h.services.Authorization.GenerateToken(input.Login, input.Password)
 		if err != nil {
-
 			pkg.ErrPrint("transport", http.StatusInternalServerError, err)
 			return errResponse(c, http.StatusInternalServerError, "internal server error")
 		}

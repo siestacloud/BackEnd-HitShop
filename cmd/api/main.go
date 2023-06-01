@@ -40,7 +40,6 @@ func main() {
 		logrus.Warnf("failed to initialize postrges: %s", err.Error())
 	}
 
-	// * инициализирую слои
 	repos := repository.NewRepository(db, &cfg)
 	services := service.NewService(repos)
 	handlers := handler.NewHandler(services)
