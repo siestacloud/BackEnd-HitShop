@@ -48,7 +48,7 @@ func (s *Server) Run() error {
 	// ctrl+c/ctrl+x interrupt
 	signal.Notify(runChan, os.Interrupt, syscall.SIGTSTP)
 
-	server := &http.Server{Addr: s.c.Address}
+	server := &http.Server{Addr: s.c.ServerAddress}
 	s.cfgRouter()
 
 	// Run the server on a new gorutine
@@ -83,11 +83,10 @@ func (s *Server) cfgLogRus() error {
 		return err
 	}
 	logrus.SetLevel(level)
-	if s.c.Logrus.LogLevel == "debug" {
+	if s.c.LogLevel == "debug" {
 		logrus.SetReportCaller(true)
 	}
-	if s.c.Logrus.JSON {
-
+	if s.c.LogJsonMod {
 		logrus.SetFormatter(&logrus.JSONFormatter{})
 	}
 	return nil

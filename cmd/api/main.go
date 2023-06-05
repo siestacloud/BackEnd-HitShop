@@ -29,18 +29,20 @@ var (
 // @name Authorization
 func main() {
 
-	// *парсинг flags, env
-	err := config.Parse(&cfg)
+	// * парсинг env
+	cfg, err := config.LoadConfig(".")
 	if err != nil {
-		log.Fatal(err)
-	}
-	// *подключение базы
-	db, err := repository.NewPostgresDB(cfg.URLPostgres)
-	if err != nil {
-		logrus.Warnf("failed to initialize postrges: %s", err.Error())
+		log.Fatal("🚀 Could not load environment variables", err)
 	}
 
-	repos := repository.NewRepository(db, &cfg)
+	logrus.Info(cfg)
+	// *подключение базы
+	// db, err := repository.NewPostgresDB(cfg.URLPostgres)
+	// if err != nil {
+	// 	logrus.Warnf("failed to initialize postrges: %s", err.Error())
+	// }
+
+	repos := repository.NewRepository(nil, &cfg)
 	services := service.NewService(repos)
 	handlers := handler.NewHandler(services)
 

@@ -1,17 +1,42 @@
 package config
 
-// Config Server configuration struct
+import (
+	"log"
+
+	"github.com/caarlos0/env/v6"
+	"github.com/spf13/viper"
+)
+
 type Cfg struct {
-	Server
+	DBHost         string `mapstructure:"POSTGRES_HOST"`
+	DBUserName     string `mapstructure:"POSTGRES_USER"`
+	DBUserPassword string `mapstructure:"POSTGRES_PASSWORD"`
+	DBName         string `mapstructure:"POSTGRES_DB"`
+	DBPort         string `mapstructure:"POSTGRES_PORT"`
+	ServerAddress  string `mapstructure:"SERVER_ADDRESS"`
+	ServerPort     string `mapstructure:"SERVER_PORT"`
+
+	ClientOrigin string `mapstructure:"CLIENT_ORIGIN"`
+	LogJsonMod   bool   `mapstructure:"LOG_JSON_MOD"` // log format in json
+	LogLevel     string `mapstructure:"LOG_LEVEL"`    // info,debug
 }
 
-type Server struct {
-	Logrus
-	Address     string `env:"ADDRESS"`
-	URLPostgres string `env:"DATABASE_URI"`
-}
+func LoadConfig(path string) (config Cfg, err error) {
+	viper.AddConfigPath(path)
+	viper.SetConfigType("env")
+	viper.SetConfigName("app")
 
-type Logrus struct {
-	LogLevel string `env:"LOGSLEVEL" ` // info,debug
-	JSON     bool   `env:"JSONLOGS" `  // log format in json
+	viper.AutomaticEnv()
+
+	err = viper.ReadInConfig()
+	if err != nil {
+		return
+	}
+
+	err = viper.Unmarshal(&config)
+	err = env.Parse(&config)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return
 }
