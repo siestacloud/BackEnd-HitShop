@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -22,7 +23,7 @@ const (
 
 type tokenClaims struct {
 	jwt.StandardClaims
-	UserID int `json:"user_id"`
+	AccountID uuid.UUID `json:"user_id"`
 }
 
 // Авторизация и аутентификация
@@ -42,16 +43,16 @@ func (s *AuthService) Test() {
 }
 
 // CreateUser создание пользователя
-func (s *AuthService) CreateUser(user core.User) (int, error) {
-	user.Password = generatePasswordHash(user.Password)
-	return s.repo.CreateUser(user)
+func (s *AuthService) CreateUser(acc core.Account) (uuid.UUID, error) {
+	acc.Password = generatePasswordHash(acc.Password)
+	return s.repo.CreateAccount(acc)
 }
 
 // Для генерации токена нужно получить пользователя из базы
 // если пользователя нет, вернуть ошибку
 // в токен записывается id пользователя
-func (s *AuthService) GenerateToken(login, password string) (string, error) {
-	user, err := s.repo.GetUser(login, generatePasswordHash(password))
+func (s *AuthService) GenerateToken(email, password string) (string, error) {
+	user, err := s.repo.GetAccount(email, generatePasswordHash(password))
 	if err != nil {
 		return "", err
 	}
@@ -61,7 +62,7 @@ func (s *AuthService) GenerateToken(login, password string) (string, error) {
 			ExpiresAt: time.Now().Add(tokenTTL).Unix(), // токен перестает быть валидным через
 			IssuedAt:  time.Now().Unix(),
 		},
-		user.ID,
+		user.UUID,
 	})
 
 	return token.SignedString([]byte(signingKey))
@@ -69,7 +70,7 @@ func (s *AuthService) GenerateToken(login, password string) (string, error) {
 
 // Используется middleware
 // Достаем Id пользователя из токена
-func (s *AuthService) ParseToken(accessToken string) (int, error) {
+func (s *AuthService) ParseToken(accessToken string) (uuid.UUID, error) {
 	token, err := jwt.ParseWithClaims(accessToken, &tokenClaims{},
 		func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -79,15 +80,15 @@ func (s *AuthService) ParseToken(accessToken string) (int, error) {
 			return []byte(signingKey), nil
 		})
 	if err != nil {
-		return 0, err
+		return uuid.UUID{}, err
 	}
 
 	claims, ok := token.Claims.(*tokenClaims)
 	if !ok {
-		return 0, errors.New("token claims are not of type *tokenClaims")
+		return uuid.UUID{}, errors.New("token claims are not of type *tokenClaims")
 	}
 
-	return claims.UserID, nil
+	return claims.AccountID, nil
 }
 
 // generatePasswordHash генерирует хеш, добавляем соль, перчим

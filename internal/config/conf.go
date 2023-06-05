@@ -13,12 +13,13 @@ type Cfg struct {
 	DBUserPassword string `mapstructure:"POSTGRES_PASSWORD"`
 	DBName         string `mapstructure:"POSTGRES_DB"`
 	DBPort         string `mapstructure:"POSTGRES_PORT"`
-	ServerAddress  string `mapstructure:"SERVER_ADDRESS"`
-	ServerPort     string `mapstructure:"SERVER_PORT"`
+	DBSslMode      string `mapstructure:"POSTGRES_SSL_MODE"`
 
-	ClientOrigin string `mapstructure:"CLIENT_ORIGIN"`
-	LogJsonMod   bool   `mapstructure:"LOG_JSON_MOD"` // log format in json
-	LogLevel     string `mapstructure:"LOG_LEVEL"`    // info,debug
+	ServerAddress string `mapstructure:"SERVER_ADDRESS"`
+	ServerPort    string `mapstructure:"SERVER_PORT"`
+
+	LogJsonMod bool   `mapstructure:"LOG_JSON_MOD"`
+	LogLevel   string `mapstructure:"LOG_LEVEL"`
 }
 
 func LoadConfig(path string) (config Cfg, err error) {

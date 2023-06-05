@@ -49,3 +49,12 @@ func getUserID(c echo.Context) (int, error) {
 	}
 	return idInt, nil
 }
+
+func (h *Handler) CheckContentType(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		if c.Request().Header.Get("Content-Type") != "application/json" {
+			return errResponse(c, http.StatusBadRequest, "refuse request")
+		}
+		return next(c)
+	}
+}

@@ -17,12 +17,12 @@ type statusResponse struct {
 }
 
 func errResponse(c echo.Context, statusCode int, message string) error {
-	pkg.ErrPrint("transport", statusCode, message)
+	pkg.ErrPrintT(c.Request().RequestURI, statusCode, message)
 	return c.JSON(statusCode, errorResponse{"error"})
 }
 
 func Redirect(c echo.Context, statusCode int, message string, URI string) error {
-	pkg.WarnPrint("transport", statusCode, message)
+	pkg.WarnPrint(c.Request().RequestURI, statusCode, message)
 	return c.Redirect(statusCode, URI)
 }
 

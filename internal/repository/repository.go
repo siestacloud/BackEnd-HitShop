@@ -4,6 +4,7 @@ import (
 	"hitshop/internal/config"
 	"hitshop/internal/core"
 
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -12,8 +13,8 @@ import (
 // Authorization имплементирует логику хранения пользователей в базе
 type Authorization interface {
 	TestDB()
-	CreateUser(user core.User) (int, error)
-	GetUser(username, password string) (*core.User, error)
+	CreateAccount(acc core.Account) (uuid.UUID, error)
+	GetAccount(email, password string) (*core.Account, error)
 }
 
 // Repository главная структура слоя репозиторий

@@ -35,14 +35,13 @@ func main() {
 		log.Fatal("🚀 Could not load environment variables", err)
 	}
 
-	logrus.Info(cfg)
 	// *подключение базы
-	// db, err := repository.NewPostgresDB(cfg.URLPostgres)
-	// if err != nil {
-	// 	logrus.Warnf("failed to initialize postrges: %s", err.Error())
-	// }
+	db, err := repository.ConnectDB(&cfg)
+	if err != nil {
+		return
+	}
 
-	repos := repository.NewRepository(nil, &cfg)
+	repos := repository.NewRepository(db, &cfg)
 	services := service.NewService(repos)
 	handlers := handler.NewHandler(services)
 

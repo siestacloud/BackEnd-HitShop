@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"hitshop/internal/core"
 	"hitshop/pkg"
 	"net/http"
@@ -27,50 +26,48 @@ import (
 func (h *Handler) Register() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
-		pkg.InfoPrint("transport", "process", "new request on /auth/register")
+		uri := c.Request().RequestURI
 
-		var input core.User
+		pkg.InfoPrint(uri, "ok", "detect request")
+		var acc core.Account
 		// todo обработку fetch запроса с данными в формате json
-		//? if err := c.Bind(&input); err != nil {
-		//? 	pkg.ErrPrint("transport", http.StatusBadRequest, err)
-		//? 	return errResponse(c, http.StatusBadRequest, "bind body failure")
-		//? }
-		input.Login = c.FormValue("login")
-		input.Password = c.FormValue("password")
-		fmt.Println("INPUT ", input)
-		if err := c.Validate(input); err != nil {
-			pkg.ErrPrint("transport", http.StatusBadRequest, err)
-			return errResponse(c, http.StatusBadRequest, "validate failure")
+		if err := c.Bind(&acc); err != nil {
+			pkg.ErrPrintT(uri, "error", err)
+			return errResponse(c, http.StatusBadRequest, "body bind failure")
+		}
+		if err := c.Validate(acc); err != nil {
+			pkg.ErrPrintT(uri, http.StatusBadRequest, err)
+			return errResponse(c, http.StatusBadRequest, "body validate failure")
 		}
 
 		// * авторизация
-		_, err := h.services.Authorization.CreateUser(input)
+		_, err := h.services.Authorization.CreateUser(acc)
 		if err != nil {
 			if strings.Contains(err.Error(), "login busy") {
-				pkg.ErrPrint("transport", http.StatusConflict, err)
 				return errResponse(c, http.StatusConflict, err.Error())
 			}
 
-			pkg.ErrPrint("transport", http.StatusInternalServerError, err)
+			pkg.ErrPrintT(uri, http.StatusInternalServerError, err)
 			return errResponse(c, http.StatusInternalServerError, "internal server error")
 		}
 
 		// * аутентификация
-		token, err := h.services.Authorization.GenerateToken(input.Login, input.Password)
+		token, err := h.services.Authorization.GenerateToken(acc.Email, acc.Password)
 		if err != nil {
-			pkg.ErrPrint("transport", http.StatusInternalServerError, err)
+			pkg.ErrPrintT(uri, http.StatusInternalServerError, err)
 			return errResponse(c, http.StatusInternalServerError, "internal server error")
 		}
 
 		c.SetCookie(writeCookie("/", "Token", "Bearer "+token))
-		return c.Redirect(http.StatusSeeOther, "/api/sessions/static/extract")
+		return c.JSON(http.StatusOK, "register success")
+
 	}
 }
 
-type signInInput struct {
-	Login    string `json:"login" validate:"required"`
-	Password string `json:"password" validate:"required"`
-}
+//// type signInInput struct {
+//// 	Login    string `json:"login" validate:"required"`
+//// 	Password string `json:"password" validate:"required"`
+//// }
 
 //   - `POST /auth/login` 						— аутентификация пользователя;
 //
@@ -88,31 +85,31 @@ type signInInput struct {
 // @Router /auth/login [post]
 func (h *Handler) Login() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		pkg.InfoPrint("transport", "process", "new request on /auth/login")
-		var input signInInput
-		// todo обработку fetch запроса с данными в формате json
-		//? if err := c.Bind(&input); err != nil {
-		//? 	pkg.ErrPrint("transport", http.StatusBadRequest, err)
-		//? 	return errResponse(c, http.StatusBadRequest, "bind body failure")
-		//? }
-		input.Login = c.FormValue("login")
-		input.Password = c.FormValue("password")
-		if err := c.Validate(input); err != nil {
-			pkg.ErrPrint("transport", http.StatusBadRequest, err)
+		uri := c.Request().RequestURI
+
+		pkg.InfoPrint(uri, "process", "detect request")
+		var acc core.Account
+		if err := c.Bind(&acc); err != nil {
+			pkg.ErrPrintT(uri, http.StatusBadRequest, err)
+			return errResponse(c, http.StatusBadRequest, "bind body failure")
+		}
+		if err := c.Validate(acc); err != nil {
+			pkg.ErrPrintT(uri, http.StatusBadRequest, err)
 			return errResponse(c, http.StatusBadRequest, "validate failure")
 		}
-		token, err := h.services.Authorization.GenerateToken(input.Login, input.Password)
+		token, err := h.services.Authorization.GenerateToken(acc.Email, acc.Password)
 		if err != nil {
 			if strings.Contains(err.Error(), "invalid username/password pair") {
-				pkg.ErrPrint("transport", http.StatusBadRequest, err)
+				pkg.ErrPrintT(uri, http.StatusBadRequest, err)
 				return errResponse(c, http.StatusUnauthorized, err.Error())
 			}
 
-			pkg.ErrPrint("transport", http.StatusInternalServerError, err)
+			pkg.ErrPrintT(uri, http.StatusInternalServerError, err)
 			return errResponse(c, http.StatusInternalServerError, "internal server error")
 		}
 
 		c.SetCookie(writeCookie("/", "Token", "Bearer "+token))
-		return c.Redirect(http.StatusMovedPermanently, "/api/sessions/static/extract")
+		return c.JSON(http.StatusOK, "login success")
+
 	}
 }

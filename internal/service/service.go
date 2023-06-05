@@ -3,6 +3,8 @@ package service
 import (
 	"hitshop/internal/core"
 	"hitshop/internal/repository"
+
+	"github.com/google/uuid"
 )
 
 // Authorization имплементорует логику авторизации
@@ -10,9 +12,9 @@ import (
 //go:generate mockgen -source=service.go -destination=mocks/mock.go
 type Authorization interface {
 	Test()
-	CreateUser(user core.User) (int, error)
-	GenerateToken(username, password string) (string, error)
-	ParseToken(token string) (int, error)
+	CreateUser(user core.Account) (uuid.UUID, error)
+	GenerateToken(email, password string) (string, error)
+	ParseToken(token string) (uuid.UUID, error)
 }
 
 type Service struct {

@@ -104,9 +104,9 @@ func (s *Server) cfgRouter() {
 	s.e.Static("/static", "assets")
 
 	auth := s.e.Group("/auth")
+	auth.Use(s.h.CheckContentType)
 	// * POST /auth/register 				— регистрация пользователя;
 	// * POST /auth/login 					— аутентификация пользователя;
-
 	auth.POST("/register", s.h.Register())
 	auth.POST("/login", s.h.Login())
 
