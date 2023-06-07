@@ -42,17 +42,32 @@ func (s *AuthService) Test() {
 	s.repo.TestDB()
 }
 
-// CreateUser создание пользователя
-func (s *AuthService) CreateUser(acc core.Account) (uuid.UUID, error) {
+// CreateAccount
+func (s *AuthService) CreateAccount(acc *core.Account) (uuid.UUID, error) {
 	acc.Password = generatePasswordHash(acc.Password)
 	return s.repo.CreateAccount(acc)
+}
+
+// GetAccountByCode
+func (s *AuthService) GetAccountByCode(verification_code string) (*core.Account, error) {
+	return s.repo.GetAccountByCode(verification_code)
+}
+
+// GetAccountByCode
+func (s *AuthService) GetAccountByEmail(email, password string) (*core.Account, error) {
+	return s.repo.GetAccountByEmail(email, password)
+}
+
+// GetAccountByCode
+func (s *AuthService) UpdateAccount(acc *core.Account) (uuid.UUID, error) {
+	return s.repo.UpdateAccount(acc)
 }
 
 // Для генерации токена нужно получить пользователя из базы
 // если пользователя нет, вернуть ошибку
 // в токен записывается id пользователя
 func (s *AuthService) GenerateToken(email, password string) (string, error) {
-	user, err := s.repo.GetAccount(email, generatePasswordHash(password))
+	user, err := s.repo.GetAccountByEmail(email, generatePasswordHash(password))
 	if err != nil {
 		return "", err
 	}

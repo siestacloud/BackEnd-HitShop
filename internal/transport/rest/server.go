@@ -113,6 +113,9 @@ func (s *Server) cfgRouter() {
 	auth.POST("/login", s.h.Login())
 	auth.POST("/logout", s.h.Logout())
 
+	verify := s.e.Group("/verify")
+	verify.GET("/email/:code", s.h.VerifyEmail())
+
 	api := s.e.Group("/api")
 	api.Use(s.h.UserIdentity) //! доступ ограничен по JWT token
 	// sessions := api.Group("/sessions")

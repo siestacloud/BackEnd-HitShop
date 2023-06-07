@@ -52,8 +52,10 @@ type Accounts struct {
 	FkAccountStatIdReferer int
 	AccountStatId          AccountStatuses `gorm:"column:fk_account_stat_id_referer;	foreignKey:FkAccountStatIdReferer;	constraint:OnDelete:CASCADE;	not null"`
 
-	AccountEmail           string `gorm:"column:account_email;					type:varchar(30);	unique; not null"`
-	AccountVerify          bool   `gorm:"column:account_verify;					type:boolean;							not null"`
+	AccountEmail      string `gorm:"column:account_email;					type:varchar(30);	unique; 	not null"`
+	AccountVerify     bool   `gorm:"column:account_verify;					type:boolean;							not null"`
+	AccountVerifyCode string `gorm:"column:account_verify_code;					type:varchar(90);			not null"`
+
 	AccountPasswordHash    string `gorm:"column:account_password_hash;	type:varchar(90);					not null"`
 	AccountPhoneNumberHash string `gorm:"column:account_phone_number;		type:varchar(30);	unique;"`
 

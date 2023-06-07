@@ -13,8 +13,10 @@ import (
 // Authorization имплементирует логику хранения пользователей в базе
 type Authorization interface {
 	TestDB()
-	CreateAccount(acc core.Account) (uuid.UUID, error)
-	GetAccount(email, password string) (*core.Account, error)
+	CreateAccount(acc *core.Account) (uuid.UUID, error)
+	UpdateAccount(acc *core.Account) (uuid.UUID, error)
+	GetAccountByEmail(email, password string) (*core.Account, error)
+	GetAccountByCode(verification_code string) (*core.Account, error)
 }
 
 // Repository главная структура слоя репозиторий

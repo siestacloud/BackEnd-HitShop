@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"hitshop/internal/core"
 	"hitshop/pkg"
 	"net/http"
 	"time"
@@ -12,7 +13,7 @@ type errorResponse struct {
 	Message string `json:"message"`
 }
 
-type statusResponse struct {
+type statResponse struct {
 	Status string `json:"status"`
 }
 
@@ -22,7 +23,7 @@ func errResponse(c echo.Context, statusCode int, message string) error {
 }
 
 func Redirect(c echo.Context, statusCode int, message string, URI string) error {
-	pkg.WarnPrint(c.Request().RequestURI, statusCode, message)
+	pkg.WarnPrintT(c.Request().RequestURI, statusCode, message)
 	return c.Redirect(statusCode, URI)
 }
 
@@ -34,4 +35,14 @@ func writeCookie(path, name, value string) *http.Cookie {
 	cookie.Path = path
 	cookie.Expires = time.Now().Add(24 * time.Hour)
 	return cookie
+}
+
+func accountResponse(c echo.Context, statusCode int, acc core.Account) error {
+	pkg.InfoPrintT(c.Request().RequestURI, statusCode, acc.Email)
+	return c.JSON(statusCode, acc)
+}
+
+func statusResponse(c echo.Context, statusCode int, message string) error {
+	pkg.InfoPrintT(c.Request().RequestURI, statusCode, message)
+	return c.JSON(statusCode, statResponse{message})
 }

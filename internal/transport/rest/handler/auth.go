@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"fmt"
 	"hitshop/internal/core"
 	"hitshop/pkg"
 	"net/http"
@@ -30,7 +31,7 @@ func (h *Handler) Register() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		uri := c.Request().RequestURI
 
-		pkg.InfoPrint(uri, "ok", "detect request")
+		// pkg.InfoPrintT(uri, "healfy", "detect request")
 		var payload core.SignUpInput
 		if err := c.Bind(&payload); err != nil {
 			pkg.ErrPrintT(uri, "error", err)
@@ -54,16 +55,14 @@ func (h *Handler) Register() echo.HandlerFunc {
 			Password:         payload.Password,
 			Role:             "client",
 			Verified:         false,
+			Status:           "healfy",
 			VerificationCode: verification_code,
 			CreateAt:         now,
 			UpdateAt:         now,
 		}
-		if err := pkg.SendEmail(&acc, acc.Email, verification_code, h.cfg); err != nil {
-			return errResponse(c, http.StatusInternalServerError, err.Error())
-		}
 
 		// * авторизация
-		_, err := h.services.Authorization.CreateUser(acc)
+		_, err := h.services.Authorization.CreateAccount(&acc)
 		if err != nil {
 			if strings.Contains(err.Error(), "login busy") {
 				return errResponse(c, http.StatusConflict, err.Error())
@@ -73,15 +72,12 @@ func (h *Handler) Register() echo.HandlerFunc {
 			return errResponse(c, http.StatusInternalServerError, "internal server error")
 		}
 
-		// * аутентификация
-		token, err := h.services.Authorization.GenerateToken(acc.Email, acc.Password)
-		if err != nil {
-			pkg.ErrPrintT(uri, http.StatusInternalServerError, err)
-			return errResponse(c, http.StatusInternalServerError, "internal server error")
+		if err := pkg.SendEmail(&acc, code, h.cfg); err != nil {
+			return errResponse(c, http.StatusInternalServerError, err.Error())
 		}
 
-		c.SetCookie(writeCookie("/", "Token", "Bearer "+token))
-		return c.JSON(http.StatusOK, "register success")
+		// c.SetCookie(writeCookie("/", "Token", "Bearer "+token))
+		return statusResponse(c, http.StatusOK, "success")
 
 	}
 }
@@ -140,5 +136,30 @@ func (h *Handler) Logout() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		c.SetCookie(writeCookie("/", "Token", ""))
 		return c.JSON(http.StatusOK, "logout success")
+	}
+}
+
+// VerifyEmail
+func (h *Handler) VerifyEmail() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		// uri := c.Request().RequestURI
+		code := c.Param("code")
+		verification_code := pkg.Encode(code)
+
+		acc, err := h.services.GetAccountByCode(verification_code)
+		if err != nil {
+			return errResponse(c, http.StatusConflict, err.Error())
+		}
+		if acc.Verified {
+			return errResponse(c, http.StatusConflict, fmt.Sprintf("Email %s already verified", acc.Email))
+		}
+		acc.Verified = true
+		acc.UpdateAt = time.Now()
+		_, err = h.services.UpdateAccount(acc)
+		if err != nil {
+			return errResponse(c, http.StatusInternalServerError, err.Error())
+		}
+
+		return Redirect(c, http.StatusSeeOther, fmt.Sprintf("Email %s verified successfully, Redirect to /login ", acc.Email), "/login")
 	}
 }

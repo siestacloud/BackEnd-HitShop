@@ -12,7 +12,11 @@ import (
 //go:generate mockgen -source=service.go -destination=mocks/mock.go
 type Authorization interface {
 	Test()
-	CreateUser(user core.Account) (uuid.UUID, error)
+	CreateAccount(acc *core.Account) (uuid.UUID, error)
+	UpdateAccount(acc *core.Account) (uuid.UUID, error)
+	GetAccountByEmail(email, password string) (*core.Account, error)
+	GetAccountByCode(verification_code string) (*core.Account, error)
+
 	GenerateToken(email, password string) (string, error)
 	ParseToken(token string) (uuid.UUID, error)
 }

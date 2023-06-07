@@ -10,28 +10,28 @@ import (
 type Account struct {
 	UUID uuid.UUID `json:"-" db:"pk_account_id"`
 
-	Role     string `json:"role" validate:"required"`
-	Email    string `json:"email"  validate:"required"`
+	Role     string `json:"role" validate:"required" `
+	Email    string `json:"email"  validate:"required" db:"account_email"`
 	Status   string
-	Password string `json:"password" validate:"required,min=8"`
+	Password string `json:"-" validate:"required,min=8" db:"account_password_hash"`
 
-	AccountPhoneNumber     string
-	AccountPhoneNumberHash string
+	AccountPhoneNumber     string `json:"-"`
+	AccountPhoneNumberHash string `json:"-"`
 
-	Verified         bool `json:"verify"`
-	VerificationCode string
+	Verified         bool   `json:"verify" db:"account_verify"`
+	VerificationCode string `json:"-" db:"account_verify_code"`
 
 	AccountStatistic
 	Favorites
 
-	CreateAt time.Time
-	UpdateAt time.Time
-	DeleteAt time.Time
+	CreateAt time.Time `db:"account_create_at"`
+	UpdateAt time.Time `db:"account_update_at"`
+	DeleteAt time.Time `json:"-" db:"account_delete_at"`
 }
 
 type AccountStatistic struct {
-	PurchaseCount int
-	Description   string
+	PurchaseCount int    `json:"-"`
+	Description   string `json:"-"`
 }
 
 type Favorites struct {

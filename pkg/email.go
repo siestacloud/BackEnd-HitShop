@@ -43,12 +43,12 @@ func ParseTemplateDir(dir string) (*template.Template, error) {
 	return template.ParseFiles(paths...)
 }
 
-func SendEmail(acc *core.Account, accEmail, code string, config *config.Cfg) error {
+func SendEmail(acc *core.Account, code string, config *config.Cfg) error {
 	//* 👇 Send Email
 	data := EmailData{
-		VerifyURL:      config.ClientOrigin + "/verifyemail/" + code,
+		VerifyURL:      config.ClientOrigin + "/auth/verifyemail/" + code,
 		UnsubscribeURL: config.ClientOrigin + "/unsubscribe/" + code,
-		AccountEmail:   accEmail,
+		AccountEmail:   acc.Email,
 		Subject:        "Код проверки вашей учетной записи",
 	}
 
