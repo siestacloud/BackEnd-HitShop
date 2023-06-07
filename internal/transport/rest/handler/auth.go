@@ -65,11 +65,9 @@ func (h *Handler) Register() echo.HandlerFunc {
 			if strings.Contains(err.Error(), "login busy") {
 				return errResponse(c, http.StatusConflict, err.Error())
 			}
-
 			pkg.ErrPrintT(uri, http.StatusInternalServerError, err)
 			return errResponse(c, http.StatusInternalServerError, "internal server error")
 		}
-
 		if err := pkg.SendEmail(&acc, code, h.cfg); err != nil {
 			return errResponse(c, http.StatusInternalServerError, err.Error())
 		}
