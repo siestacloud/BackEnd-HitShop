@@ -30,8 +30,6 @@ func (h *Handler) Register() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
 		uri := c.Request().RequestURI
-
-		// pkg.InfoPrintT(uri, "healfy", "detect request")
 		var payload core.SignUpInput
 		if err := c.Bind(&payload); err != nil {
 			pkg.ErrPrintT(uri, "error", err)
@@ -45,7 +43,7 @@ func (h *Handler) Register() echo.HandlerFunc {
 			return errResponse(c, http.StatusBadRequest, "passwords do not match")
 		}
 
-		// Generate Verification Code
+		//* Generate Verification Code
 		code := randstr.String(20)
 		verification_code := pkg.Encode(code)
 
@@ -75,17 +73,10 @@ func (h *Handler) Register() echo.HandlerFunc {
 		if err := pkg.SendEmail(&acc, code, h.cfg); err != nil {
 			return errResponse(c, http.StatusInternalServerError, err.Error())
 		}
-
-		// c.SetCookie(writeCookie("/", "Token", "Bearer "+token))
 		return statusResponse(c, http.StatusOK, "success")
 
 	}
 }
-
-//// type signInInput struct {
-//// 	Login    string `json:"login" validate:"required"`
-//// 	Password string `json:"password" validate:"required"`
-//// }
 
 //   - `POST /auth/login` 						— аутентификация пользователя;
 //
