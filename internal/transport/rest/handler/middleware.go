@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -40,12 +41,12 @@ func (h *Handler) UserIdentity(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func getUserID(c echo.Context) (int, error) {
+func getUserID(c echo.Context) (uuid.UUID, error) {
 	id := c.Get(userCtx)
 
-	idInt, ok := id.(int)
+	idInt, ok := id.(uuid.UUID)
 	if !ok {
-		return 0, errors.New("user id is of invalid type")
+		return uuid.UUID{}, errors.New("user id is of invalid type")
 	}
 	return idInt, nil
 }

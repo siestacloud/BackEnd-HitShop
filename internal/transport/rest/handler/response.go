@@ -44,5 +44,5 @@ func accountResponse(c echo.Context, statusCode int, acc core.Account) error {
 
 func statusResponse(c echo.Context, statusCode int, message string) error {
 	pkg.InfoPrintT(c.Request().RequestURI, statusCode, message)
-	return c.JSON(statusCode, statResponse{message})
+	return c.JSON(statusCode, statResponse{"success"})
 }

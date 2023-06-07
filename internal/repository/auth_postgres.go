@@ -50,7 +50,7 @@ func (r *AuthPostgres) GetAccountByEmail(email, password string) (*core.Account,
 		return nil, errors.New("database are not connected")
 	}
 	var acc core.Account
-	query := fmt.Sprintf("SELECT  account_email, account_verify, account_password_hash,  account_create_at, account_update_at   FROM %s WHERE account_email=$1 AND account_password_hash=$2", accountsTable)
+	query := fmt.Sprintf("SELECT pk_account_id, account_email, account_verify, account_password_hash,  account_create_at, account_update_at   FROM %s WHERE account_email=$1 AND account_password_hash=$2", accountsTable)
 	if err := r.db.Get(&acc, query, email, password); err != nil {
 		pkg.ErrPrintR("unhealfy", err)
 
@@ -67,10 +67,26 @@ func (r *AuthPostgres) GetAccountByCode(verification_code string) (*core.Account
 	}
 
 	var acc core.Account
-	query := fmt.Sprintf("SELECT  account_email, account_verify, account_password_hash,  account_create_at, account_update_at  FROM %s WHERE account_verify_code=$1", accountsTable)
+	query := fmt.Sprintf("SELECT  pk_account_id, account_email, account_verify, account_password_hash,  account_create_at, account_update_at  FROM %s WHERE account_verify_code=$1", accountsTable)
 	if err := r.db.Get(&acc, query, verification_code); err != nil {
 		pkg.ErrPrintR("unhealfy", err)
 		return nil, errors.New("Invalid verification code or account doesn't exists")
+	}
+
+	return &acc, nil
+}
+
+// GetUser получить пользователя из базы
+func (r *AuthPostgres) GetAccountByUUID(UUID uuid.UUID) (*core.Account, error) {
+	if r.db == nil {
+		return nil, errors.New("database are not connected")
+	}
+	var acc core.Account
+	query := fmt.Sprintf("SELECT pk_account_id, account_email, account_verify, account_password_hash,  account_create_at, account_update_at   FROM %s WHERE pk_account_id=$1 ", accountsTable)
+	if err := r.db.Get(&acc, query, UUID); err != nil {
+		pkg.ErrPrintR("unhealfy", err)
+
+		return nil, errors.New("invalid username/password pair")
 	}
 
 	return &acc, nil
@@ -82,8 +98,8 @@ func (r *AuthPostgres) UpdateAccount(acc *core.Account) (uuid.UUID, error) {
 		return uuid.UUID{}, errors.New("database are not connected")
 	}
 	// fk_role_id_referer  fk_account_stat_id_referer account_email account_verify account_password_hash account_phone_number account_create_at account_update_at account_delete_at account_verify_code
-	query := fmt.Sprintf("UPDATE %s SET account_verify=$1, account_update_at=$2 WHERE account_email = $3  ", accountsTable)
-	_, err := r.db.Exec(query, acc.Verified, acc.UpdateAt, acc.Email)
+	query := fmt.Sprintf("UPDATE %s SET account_verify=$1, account_password_hash=$2,account_update_at=$3 WHERE account_email = $4  ", accountsTable)
+	_, err := r.db.Exec(query, acc.Verified, acc.Password, acc.UpdateAt, acc.Email)
 	if err != nil {
 		pkg.ErrPrintR("unhealfy", err)
 		return uuid.UUID{}, errors.New("login busy")

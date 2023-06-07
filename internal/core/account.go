@@ -11,9 +11,9 @@ type Account struct {
 	UUID uuid.UUID `json:"-" db:"pk_account_id"`
 
 	Role     string `json:"role" validate:"required" `
-	Email    string `json:"email"  validate:"required" db:"account_email"`
+	Email    string `json:"email"  validate:"required,email" db:"account_email"`
 	Status   string
-	Password string `json:"-" validate:"required,min=8" db:"account_password_hash"`
+	Password string `json:"-" validate:"required,min=8,containsany=!@#?*" db:"account_password_hash"`
 
 	AccountPhoneNumber     string `json:"-"`
 	AccountPhoneNumberHash string `json:"-"`
@@ -40,13 +40,18 @@ type Favorites struct {
 
 type SignUpInput struct {
 	Role            string `json:"role" validate:"required"`
-	Email           string `json:"email" binding:"required"`
-	Password        string `json:"password" binding:"required,min=8"`
-	PasswordConfirm string `json:"passwordConfirm" binding:"required" validate:"required"`
+	Email           string `json:"email" validate:"required,email"`
+	Password        string `json:"password" validate:"required,min=8,containsany=!@#?*"`
+	PasswordConfirm string `json:"passwordConfirm" binding:"required" validate:"required,min=8,containsany=!@#?*"`
 }
 
 type SignInInput struct {
 	Role     string `json:"role" validate:"required"`
-	Email    string `json:"email"  binding:"required"`
-	Password string `json:"password"  binding:"required"`
+	Email    string `json:"email"  binding:"required" validate:"required,email"`
+	Password string `json:"password"  binding:"required" validate:"required,min=8,containsany=!@#?*"`
+}
+
+type ChangePassInput struct {
+	Password    string `json:"password"  binding:"required" validate:"required,min=8,containsany=!@#?*"`
+	PasswordNew string `json:"password_new"  binding:"required,min=8" validate:"required,min=8,containsany=!@#?*"`
 }

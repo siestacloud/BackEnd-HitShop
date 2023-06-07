@@ -71,7 +71,7 @@ func (h *Handler) Register() echo.HandlerFunc {
 		if err := pkg.SendEmail(&acc, code, h.cfg); err != nil {
 			return errResponse(c, http.StatusInternalServerError, err.Error())
 		}
-		return statusResponse(c, http.StatusOK, "success")
+		return statusResponse(c, http.StatusOK, fmt.Sprintf("Success send email to %s", acc.Email))
 
 	}
 }
@@ -94,8 +94,6 @@ func (h *Handler) Login() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		uri := c.Request().RequestURI
 
-		pkg.InfoPrintT(uri, "process", "detect request")
-		// var acc core.Account
 		var payload core.SignInInput
 		if err := c.Bind(&payload); err != nil {
 			pkg.ErrPrintT(uri, http.StatusBadRequest, err)
@@ -113,22 +111,21 @@ func (h *Handler) Login() echo.HandlerFunc {
 			return errResponse(c, http.StatusInternalServerError, err.Error())
 		}
 		c.SetCookie(writeCookie("/", "Token", "Bearer "+token))
-		return c.JSON(http.StatusOK, "login success")
+		return statusResponse(c, http.StatusOK, fmt.Sprintf("Success login client %s", payload.Email))
 	}
 }
 
-// Logout
+// Logout удаление cookie
 func (h *Handler) Logout() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		c.SetCookie(writeCookie("/", "Token", ""))
-		return c.JSON(http.StatusOK, "logout success")
+		return statusResponse(c, http.StatusOK, "Success logout client")
 	}
 }
 
-// VerifyEmail
+// VerifyEmail подтверждение почты клиента
 func (h *Handler) VerifyEmail() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		// uri := c.Request().RequestURI
 		code := c.Param("code")
 		verification_code := pkg.Encode(code)
 
@@ -137,7 +134,7 @@ func (h *Handler) VerifyEmail() echo.HandlerFunc {
 			return errResponse(c, http.StatusConflict, err.Error())
 		}
 		if acc.Verified {
-			return errResponse(c, http.StatusConflict, fmt.Sprintf("Email %s already verified", acc.Email))
+			return Redirect(c, http.StatusSeeOther, fmt.Sprintf("Email %s already verified, Redirect to / ", acc.Email), "/")
 		}
 		acc.Verified = true
 		acc.UpdateAt = time.Now()
@@ -147,5 +144,28 @@ func (h *Handler) VerifyEmail() echo.HandlerFunc {
 		}
 
 		return Redirect(c, http.StatusSeeOther, fmt.Sprintf("Email %s verified successfully, Redirect to /login ", acc.Email), "/login")
+	}
+}
+
+// ChangePassword изменить пароль клиента
+func (h *Handler) ChangePassword() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var payload core.ChangePassInput
+		if err := c.Bind(&payload); err != nil {
+			return errResponse(c, http.StatusBadRequest, err.Error())
+		}
+		if err := c.Validate(payload); err != nil {
+			return errResponse(c, http.StatusBadRequest, err.Error())
+		}
+		accountUUID, err := getUserID(c)
+		if err != nil {
+			return errResponse(c, http.StatusInternalServerError, err.Error()) // в контексте нет id пользователя
+		}
+		_, err = h.services.ChangePassword(accountUUID, payload.Password, payload.PasswordNew)
+		if err != nil {
+			return errResponse(c, http.StatusInternalServerError, err.Error())
+		}
+		return statusResponse(c, http.StatusOK, "Success change password")
+
 	}
 }

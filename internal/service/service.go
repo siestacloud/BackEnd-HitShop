@@ -16,6 +16,7 @@ type Authorization interface {
 	UpdateAccount(acc *core.Account) (uuid.UUID, error)
 	GetAccountByEmail(email, password string) (*core.Account, error)
 	GetAccountByCode(verification_code string) (*core.Account, error)
+	ChangePassword(UUID uuid.UUID, password, passwordNew string) (uuid.UUID, error)
 
 	GenerateToken(email, password string) (string, error)
 	ParseToken(token string) (uuid.UUID, error)

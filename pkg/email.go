@@ -46,7 +46,7 @@ func ParseTemplateDir(dir string) (*template.Template, error) {
 func SendEmail(acc *core.Account, code string, config *config.Cfg) error {
 	//* 👇 Send Email
 	data := EmailData{
-		VerifyURL:      config.ClientOrigin + "/auth/verifyemail/" + code,
+		VerifyURL:      config.ClientOrigin + "/verify/email/" + code,
 		UnsubscribeURL: config.ClientOrigin + "/unsubscribe/" + code,
 		AccountEmail:   acc.Email,
 		Subject:        "Код проверки вашей учетной записи",

@@ -17,6 +17,7 @@ type Authorization interface {
 	UpdateAccount(acc *core.Account) (uuid.UUID, error)
 	GetAccountByEmail(email, password string) (*core.Account, error)
 	GetAccountByCode(verification_code string) (*core.Account, error)
+	GetAccountByUUID(UUID uuid.UUID) (*core.Account, error)
 }
 
 // Repository главная структура слоя репозиторий

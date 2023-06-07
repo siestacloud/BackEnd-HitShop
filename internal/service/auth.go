@@ -59,6 +59,11 @@ func (s *AuthService) GetAccountByEmail(email, password string) (*core.Account, 
 }
 
 // GetAccountByCode
+func (s *AuthService) GetAccountByUUID(UUID uuid.UUID) (*core.Account, error) {
+	return s.repo.GetAccountByUUID(UUID)
+}
+
+// GetAccountByCode
 func (s *AuthService) UpdateAccount(acc *core.Account) (uuid.UUID, error) {
 	return s.repo.UpdateAccount(acc)
 }
@@ -74,7 +79,6 @@ func (s *AuthService) GenerateToken(email, password string) (string, error) {
 	if !acc.Verified {
 		return "", errors.New(fmt.Sprintf("Email %s not verify yet", acc.Email))
 	}
-
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{
 		jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(tokenTTL).Unix(), // токен перестает быть валидным через
@@ -84,6 +88,20 @@ func (s *AuthService) GenerateToken(email, password string) (string, error) {
 	})
 
 	return token.SignedString([]byte(signingKey))
+}
+
+func (s *AuthService) ChangePassword(UUID uuid.UUID, password, passwordNew string) (uuid.UUID, error) {
+
+	acc, err := s.repo.GetAccountByUUID(UUID)
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+	if generatePasswordHash(password) != acc.Password {
+		return uuid.UUID{}, errors.New("passwords didn't match")
+	}
+
+	acc.Password = generatePasswordHash(passwordNew)
+	return s.repo.UpdateAccount(acc)
 }
 
 // Используется middleware
