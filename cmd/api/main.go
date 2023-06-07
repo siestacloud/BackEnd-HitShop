@@ -43,7 +43,7 @@ func main() {
 
 	repos := repository.NewRepository(db, &cfg)
 	services := service.NewService(repos)
-	handlers := handler.NewHandler(services)
+	handlers := handler.NewHandler(services, &cfg)
 
 	srv, err := rest.NewServer(&cfg, handlers)
 	if err != nil {

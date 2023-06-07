@@ -27,10 +27,8 @@ type AccountStat struct {
 	FkAccountStatusIdReferer int
 	FkAccountStatusId        AccountStatuses `gorm:"column:fk_account_status_id_referer;	foreignKey:FkAccountStatusIdReferer;	constraint:OnDelete:CASCADE;	not null"`
 
-	AccountStatPurchaseCount int64     `gorm:"column:account_stat_purchase_count;	type:bigint;"`
-	AccountStatDescription   string    `gorm:"column:account_stat_description;		type:varchar(255);"`
-	AccountStatCreateAt      time.Time `gorm:"column:account_stat_create_at;			type:timestamp;"`
-	AccountStatDeleteAt      time.Time `gorm:"column:account_stat_delete_at;			type:timestamp;"`
+	AccountStatPurchaseCount int64  `gorm:"column:account_stat_purchase_count;	type:bigint;"`
+	AccountStatDescription   string `gorm:"column:account_stat_description;		type:varchar(255);"`
 }
 
 // Избранные товары клиентов, с ссылками
@@ -58,4 +56,8 @@ type Accounts struct {
 	AccountVerify          bool   `gorm:"column:account_verify;					type:boolean;							not null"`
 	AccountPasswordHash    string `gorm:"column:account_password_hash;	type:varchar(90);					not null"`
 	AccountPhoneNumberHash string `gorm:"column:account_phone_number;		type:varchar(30);	unique;"`
+
+	CreateAt time.Time `gorm:"column:account_create_at;			type:timestamp;"`
+	UpdateAt time.Time `gorm:"column:account_update_at;			type:timestamp;"`
+	DeleteAt time.Time `gorm:"column:account_delete_at;			type:timestamp;"`
 }

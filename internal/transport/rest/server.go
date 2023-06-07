@@ -107,8 +107,11 @@ func (s *Server) cfgRouter() {
 	auth.Use(s.h.CheckContentType)
 	// * POST /auth/register 				— регистрация пользователя;
 	// * POST /auth/login 					— аутентификация пользователя;
+	// * POST /auth/logout 					— деаутентификация пользователя;
+
 	auth.POST("/register", s.h.Register())
 	auth.POST("/login", s.h.Login())
+	auth.POST("/logout", s.h.Logout())
 
 	api := s.e.Group("/api")
 	api.Use(s.h.UserIdentity) //! доступ ограничен по JWT token

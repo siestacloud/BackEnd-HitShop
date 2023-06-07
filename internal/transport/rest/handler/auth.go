@@ -5,8 +5,10 @@ import (
 	"hitshop/pkg"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/labstack/echo/v4"
+	"github.com/thanhpk/randstr"
 )
 
 //   - `POST /auth/register` 	— регистрация пользователя;
@@ -29,15 +31,35 @@ func (h *Handler) Register() echo.HandlerFunc {
 		uri := c.Request().RequestURI
 
 		pkg.InfoPrint(uri, "ok", "detect request")
-		var acc core.Account
-		// todo обработку fetch запроса с данными в формате json
-		if err := c.Bind(&acc); err != nil {
+		var payload core.SignUpInput
+		if err := c.Bind(&payload); err != nil {
 			pkg.ErrPrintT(uri, "error", err)
 			return errResponse(c, http.StatusBadRequest, "body bind failure")
 		}
-		if err := c.Validate(acc); err != nil {
+		if err := c.Validate(payload); err != nil {
 			pkg.ErrPrintT(uri, http.StatusBadRequest, err)
 			return errResponse(c, http.StatusBadRequest, "body validate failure")
+		}
+		if payload.Password != payload.PasswordConfirm {
+			return errResponse(c, http.StatusBadRequest, "passwords do not match")
+		}
+
+		// Generate Verification Code
+		code := randstr.String(20)
+		verification_code := pkg.Encode(code)
+
+		now := time.Now()
+		acc := core.Account{
+			Email:            strings.ToLower(payload.Email),
+			Password:         payload.Password,
+			Role:             "client",
+			Verified:         false,
+			VerificationCode: verification_code,
+			CreateAt:         now,
+			UpdateAt:         now,
+		}
+		if err := pkg.SendEmail(&acc, acc.Email, verification_code, h.cfg); err != nil {
+			return errResponse(c, http.StatusInternalServerError, err.Error())
 		}
 
 		// * авторизация
@@ -100,7 +122,6 @@ func (h *Handler) Login() echo.HandlerFunc {
 		token, err := h.services.Authorization.GenerateToken(acc.Email, acc.Password)
 		if err != nil {
 			if strings.Contains(err.Error(), "invalid username/password pair") {
-				pkg.ErrPrintT(uri, http.StatusBadRequest, err)
 				return errResponse(c, http.StatusUnauthorized, err.Error())
 			}
 
@@ -111,5 +132,13 @@ func (h *Handler) Login() echo.HandlerFunc {
 		c.SetCookie(writeCookie("/", "Token", "Bearer "+token))
 		return c.JSON(http.StatusOK, "login success")
 
+	}
+}
+
+// Logout
+func (h *Handler) Logout() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		c.SetCookie(writeCookie("/", "Token", ""))
+		return c.JSON(http.StatusOK, "logout success")
 	}
 }

@@ -20,6 +20,13 @@ type Cfg struct {
 
 	LogJsonMod bool   `mapstructure:"LOG_JSON_MOD"`
 	LogLevel   string `mapstructure:"LOG_LEVEL"`
+
+	EmailFrom    string `mapstructure:"EMAIL_FROM"`
+	SMTPHost     string `mapstructure:"SMTP_HOST"`
+	SMTPUser     string `mapstructure:"SMTP_USER"`
+	SMTPPass     string `mapstructure:"SMTP_PASS"`
+	SMTPPort     int    `mapstructure:"SMTP_PORT"`
+	ClientOrigin string `mapstructure:"CLIENT_ORIGIN"`
 }
 
 func LoadConfig(path string) (config Cfg, err error) {

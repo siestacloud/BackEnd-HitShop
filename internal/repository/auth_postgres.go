@@ -35,7 +35,7 @@ func (r *AuthPostgres) CreateAccount(acc core.Account) (uuid.UUID, error) {
 	var id uuid.UUID
 	query := fmt.Sprintf("INSERT INTO %s (account_email, account_password_hash,account_verify) values ($1, $2, $3) RETURNING pk_account_id", accountsTable)
 
-	row := r.db.QueryRow(query, acc.Email, acc.Password, acc.Verify)
+	row := r.db.QueryRow(query, acc.Email, acc.Password, acc.Verified)
 	if err := row.Scan(&id); err != nil {
 		pkg.ErrPrintR("repository", 409, err)
 		return uuid.UUID{}, errors.New("login busy")
