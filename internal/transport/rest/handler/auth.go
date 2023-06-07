@@ -105,29 +105,26 @@ func (h *Handler) Login() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		uri := c.Request().RequestURI
 
-		pkg.InfoPrint(uri, "process", "detect request")
-		var acc core.Account
-		if err := c.Bind(&acc); err != nil {
+		pkg.InfoPrintT(uri, "process", "detect request")
+		// var acc core.Account
+		var payload core.SignInInput
+		if err := c.Bind(&payload); err != nil {
 			pkg.ErrPrintT(uri, http.StatusBadRequest, err)
 			return errResponse(c, http.StatusBadRequest, "bind body failure")
 		}
-		if err := c.Validate(acc); err != nil {
+		if err := c.Validate(payload); err != nil {
 			pkg.ErrPrintT(uri, http.StatusBadRequest, err)
 			return errResponse(c, http.StatusBadRequest, "validate failure")
 		}
-		token, err := h.services.Authorization.GenerateToken(acc.Email, acc.Password)
+		token, err := h.services.Authorization.GenerateToken(payload.Email, payload.Password)
 		if err != nil {
 			if strings.Contains(err.Error(), "invalid username/password pair") {
 				return errResponse(c, http.StatusUnauthorized, err.Error())
 			}
-
-			pkg.ErrPrintT(uri, http.StatusInternalServerError, err)
-			return errResponse(c, http.StatusInternalServerError, "internal server error")
+			return errResponse(c, http.StatusInternalServerError, err.Error())
 		}
-
 		c.SetCookie(writeCookie("/", "Token", "Bearer "+token))
 		return c.JSON(http.StatusOK, "login success")
-
 	}
 }
 

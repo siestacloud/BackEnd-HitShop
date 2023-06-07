@@ -54,6 +54,9 @@ func createHash(key string) string {
 	return hex.EncodeToString(hasher.Sum(nil))
 }
 
+//	func VerifyPassword(hashedPassword string, candidatePassword string) error {
+//		return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(candidatePassword))
+//	}
 func Base64Encode(src []byte) string {
 	return base64.StdEncoding.EncodeToString(src)
 }

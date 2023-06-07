@@ -67,9 +67,12 @@ func (s *AuthService) UpdateAccount(acc *core.Account) (uuid.UUID, error) {
 // если пользователя нет, вернуть ошибку
 // в токен записывается id пользователя
 func (s *AuthService) GenerateToken(email, password string) (string, error) {
-	user, err := s.repo.GetAccountByEmail(email, generatePasswordHash(password))
+	acc, err := s.repo.GetAccountByEmail(email, generatePasswordHash(password))
 	if err != nil {
 		return "", err
+	}
+	if !acc.Verified {
+		return "", errors.New(fmt.Sprintf("Email %s not verify yet", acc.Email))
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, &tokenClaims{
@@ -77,7 +80,7 @@ func (s *AuthService) GenerateToken(email, password string) (string, error) {
 			ExpiresAt: time.Now().Add(tokenTTL).Unix(), // токен перестает быть валидным через
 			IssuedAt:  time.Now().Unix(),
 		},
-		user.UUID,
+		acc.UUID,
 	})
 
 	return token.SignedString([]byte(signingKey))
